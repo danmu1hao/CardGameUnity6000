@@ -1,0 +1,8 @@
+﻿id,name,atk,soulCost,sacrificeCost,tribe,type,effectText,timing,condition,cost,target,effect,effectDetail,effectDuration,extra
+1,DZC-1,3,2,,DZC,Monster,当对方攻击己方名字中带有【DZC】的角色时发动：将此卡从手卡加入伤害区，将那次攻击无效。,when_attack,self.state==InHand&attacker.playerID!=self.playerID,effect=add_damage&target=self,cardType==DZC,cancel_Fight,,,
+2,DZC-2,4,,1,DZC,Monster,当己方伤害区中有5张卡及以上时，将此卡从手卡加入伤害区，选择对方角色区里的一位角色发动：那张卡变为灵魂。,伤害区更新,伤害区卡牌>5,,从,,,,
+3,DZC-3,6,,1,DZC,Monster,此卡支付cost召唤成功时，己方受到2点效果伤害。,召唤怪兽,召唤成功,玩家,造成伤害,2,,,
+4,DZC-4,3,2,,,Monster,己方主要阶段，选择此卡拥有的一张cost低于此卡cost的名带【DZC】的灵魂来发动：将此卡变为灵魂，那张卡在此角色区重生。,,,,,,,,
+5,DZE-1,1,,1,,Monster,①位于手卡的此卡支付cost发动后，进入己方伤害区。②位于伤害区的此卡，在己方主要行动阶段仅有一次发动：选择己方场上的【DZC】角色，将那张卡加入伤害区，给予对方其攻击力数值的效果伤害。,,,,,,,,
+6,DZE-2,1,,1,,Monster,当己方有卡因为效果加入伤害区（不包括效果伤害）时，支付cost可以发动：选择对方角色区中一位角色，那个角色的攻击力-2.,,,,,,,,
+7,E-1,1,,,,Effect,①此卡也可以从伤害区发动 ②选择己方角色区中一张变为灵魂的角色卡，支付其cost来发动：将其召唤。若其角色区已经存在角色，那个角色变为其灵魂。,,,,,,,,
