@@ -4,8 +4,25 @@ Temp/
 Logs/
 Obj/
 MemoryCaptures/
-TextMesh Pro/
-Fonts/
+# Unity 缓存
+Library/
+Temp/
+Logs/
+Obj/
+Build/
+Builds/
+MemoryCaptures/
+
+# TMP 示例与大字体目录（按需选择）
+Assets/TextMesh Pro/      
+Assets/Fonts/             
+
+# 常见系统/IDE
+.DS_Store
+*.user
+*.csproj
+*.sln
+
 # Ignore the editor settings
 .vscode/
 .vs/
