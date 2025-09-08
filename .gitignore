@@ -5,6 +5,7 @@ Logs/
 Obj/
 MemoryCaptures/
 TextMesh Pro/
+Fonts/
 # Ignore the editor settings
 .vscode/
 .vs/
