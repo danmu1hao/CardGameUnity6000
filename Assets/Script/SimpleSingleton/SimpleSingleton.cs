@@ -12,6 +12,6 @@ public class SimpleSingleton<T> : MonoBehaviour where T : MonoBehaviour
             return;
         }
         Instance = this as T;
-        DontDestroyOnLoad(gameObject); // 如果不需要跨场景，可以删掉这行
+
     }
 }

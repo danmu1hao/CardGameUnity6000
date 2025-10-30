@@ -8,41 +8,124 @@ using UnityEngine;
 
 public class BattleSystem : QuickInstance<BattleSystem>
 {
-
-    public void Start()
-    {
-        Player1 = new Player(0); // ✅ 你应该在这里初始化
-        Player2 = new Player(1);
-        currentPlayer = Player1;
-        // TurnState = new TurnStartState(new TurnStateMachine());
-    }
     
+    public void BattleStart()
+    {
+        Init();
+        // TurnState = new TurnStartState(new TurnStateMachine());
+        GameManager.instance.PrepareDeck();
+        StartTurn();
+        BattleSystemUI.instance.AllotField();
+    }
+    public List<Player> players = new List<Player>();
+    /// <summary>
+    /// 目前默认玩家1是主角
+    /// </summary>
     public Player Player1 = new Player(0);
     public  Player Player2 = new Player(1);
     public  Player currentPlayer;
 
+    public void Init()
+    {
+        Player1 = new Player(0); // ✅ 你应该在这里初始化
+        Player2 = new Player(1);
+        currentPlayer = Player1;
+        players.Add(Player1);
+        players.Add(Player2);
+        for (int i = 0; i < 3; i++)
+        {
+            Field field = new Field(Player1);
+            Player1.fields.Add(field); 
+            Field field2 = new Field(Player2);
+            Player2.fields.Add(field2);
+        }
+    }
 
     public  void CreateDeck()
     {
-
+        
     }
-    
+    void Update()
+    {
+        if (chooseSlot && Input.GetMouseButtonDown(0))
+        {
+            RaycastHit2D hit = Physics2D.Raycast(Input.mousePosition, Vector2.zero);
+            
+            if (hit.collider.gameObject != null &&
+                hit.collider.gameObject.GetComponent<FieldUI>() != null )
+            {
+                Field field = hit.collider.gameObject.GetComponent<FieldUI>().field;
+                // 是当前玩家 对象没卡
+                if (field.player == currentPlayer && field.card == null)
+                {
+                    Debug.Log($"Hit UI element: {hit.collider.gameObject.name}");
+                    chooseSlot = false;
+                    GameObject selectSlot = hit.collider.gameObject;
+
+                    UseCard(currentCard.player, currentCard,selectSlot);
+                    currentCard = null;
+                }else 
+                {
+                    ResetUseCard();
+                }
+            }
+        }
+    }
+
+    public void ResetUseCard()
+    {
+        chooseSlot = false;
+        currentCard.cardModel.GetComponent<CardMouseInHand>().MoveBack();
+        currentCard = null;
+        
+    }
+
     #region 战斗
 
-    public async Task BattleConfirm(Card attker, Card defender)
+    public async Task BattleConfirm(Card attker, GameObject hitObj)
     {
-        if (attker.player == currentPlayer &&
-            attker.player != defender.player &&
-            attker.hasAttacked == false)
+        //玩家还是空slot
+        if ( hitObj.GetComponent<FieldUI>()!=null)
         {
-            TriggerData triggerData = new TriggerData(attker, new List<Card> { defender });
+            Player enemy;
+            if (hitObj.GetComponent<FieldUI>().field.player == currentPlayer)
+            {
+                return; 
+            }
+            enemy = hitObj.GetComponent<FieldUI>().field.player;
+            // 确认对面有没有怪
+            if (enemy.inFieldCards.Count != 0)
+            {
+                return;
+            }
+            TriggerData triggerData = new TriggerData(attker, enemy);
 
             // 等待效果执行完成
-            await EffectSystem.Instance.CheckEffectWithTiming(Timing.TimingList.when_attack, triggerData);
+            await EffectSystem.instance.TimingTrigger(CardEnums.TimingList.when_attack, triggerData);
 
             // 效果全部处理完之后再继续战斗
-            BattleConfirmTwo(attker, defender);
+            BattleConfirmTwo(attker, enemy);
         }
+
+        if (hitObj.GetComponent<UnitCardDisplay>()!=null)
+        {
+            Card defender = hitObj.GetComponent<UnitCardDisplay>().card;
+            if (attker.player == currentPlayer &&
+                attker.player != defender.player &&
+                attker.hasAttacked == false)
+            {
+                TriggerData triggerData = new TriggerData(attker, new List<Card> { defender });
+
+                // 等待效果执行完成
+                await EffectSystem.instance.TimingTrigger(CardEnums.TimingList.when_attack, triggerData);
+
+                // 效果全部处理完之后再继续战斗
+                BattleConfirmTwo(attker, defender);
+            }
+        }
+
+    
+
     }
 
 
@@ -57,87 +140,133 @@ public class BattleSystem : QuickInstance<BattleSystem>
 
         Battle(attker, defender);
     }
-
+    public  void BattleConfirmTwo(Card attker, Player player)
+    {
+        if (attker.cancelFight)
+        {
+            attker.cancelFight = false;
+            attker.hasAttacked = true;
+            return;
+        }
+        Battle(attker, player);
+    }
     public  void Battle(Card attker, Card defender)
     {
         if (attker.atk > defender.atk)
         {
-            DestroyCard(defender);
+            DestroyFieldCard(defender);
             DamagePlayer(defender.player, attker.atk - defender.atk);
         }
         else if (attker.atk < defender.atk)
         {
-            DestroyCard(attker);
+            DestroyFieldCard(attker);
             DamagePlayer(attker.player, defender.atk - attker.atk);
         }
         else if (attker.atk == defender.atk)
         {
-            DestroyCard(attker);
-            DestroyCard(defender);
+            DestroyFieldCard(attker);
+            DestroyFieldCard(defender);
         }
 
         attker.hasAttacked = true;
     }
-
-    public  void DestroyCard(Card card)
+    public  void Battle(Card attker, Player player)
     {
-        BattleSystemUI.instance.DestroyCard(card);
+        DamagePlayer(player, attker.atk );
+        attker.hasAttacked = true;
     }
+
 
 
     #endregion
 
     #region 使用卡牌
-
-    public  void UseCardCheck(Player player, Card card)
+    private Card currentCard;
+    public bool chooseSlot;
+    public async Task<bool> UseCardCheck(Card card)
     {
+        if (card.player != currentPlayer || card.player==null)
+        {
+            return false;
+        }
         if (card.sacrificeCost > 0)
         {
-            SacrificeCheck(card);
+            Debug.Log("开始血祭");
+            if (SacrificeCheck(card))
+            {
+                bool success=await Sacrifice(card);
+                if (!success)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
         else if (card.soulCost > 0)
         {
             SoulSummonCheck(card);
         }
-
+        // BattleSystemUI.instance.UseCardCheck(player, card);
+        // card.cardModel.GetComponent<CardMouseInHand>().WaitingForClickUI();
+        currentCard = card;
+        chooseSlot = true;
+        return true;
     }
+    public  void UseCard(Player player, Card card,GameObject field=null)
+    {
 
-    public  void SoulSummonCheck(Card card)
+        if (card.cardType==CardEnums.CardType.Monster)
+        {
+            SummonCard(card,field);
+        }
+        BattleSystemUI.instance.UseCard(card,field);
+    }
+    
+    public bool SoulSummonCheck(Card card)
     {
         // 确认灵魂是否足够
-        List<Card> soulCards = FindTarget(CardInSoulField);
+        // List<Card> soulCards = FindTarget(CardInSoulField);
+        List<Card> soulCards=new List<Card>();
         if (soulCards.Count> card.soulCost)
         {
-
-        }
-    }
-    public  bool CardInBattleField(Card card)
-    {
-        if(card.CardState==Card.CardStateEnum.InBattle)
-        {
             return true;
         }
-        else
-        {
-            return false;
-        }
-    }
-    public  bool CardInSoulField( Card card)
-    {
-        if (card.CardState == Card.CardStateEnum.InSoul)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
-    public  void SacrificeCheck(Card card)
+
+    public  bool SacrificeCheck(Card card)
     {
         // 确认祭品是否足够
+        Debug.Log("祭品需求"+card.sacrificeCost+ "场上卡牌数量"+card.player.inFieldCards.Count);
+        if (card.player.inFieldCards.Count >= card.sacrificeCost)
+        {
+            return true;
+        }
 
+        return false;
+    }
+
+    async Task<bool> Sacrifice( Card card)
+    {
+        //进入一个选择界面
+        List<Card> sacrificeCards = FindTarget(c => c.player == currentPlayer && c.CardState == CardEnums.CardStateEnum.InBattle);
+        Debug.Log("找到祭品"+sacrificeCards.Count);
+        List<Card> chosen = await UIManager.instance.OpenSelectPanel(sacrificeCards);
+        if (chosen.Count==0)
+        {
+            return false;
+        }
+        foreach (var chosCard in chosen)
+        {
+            DestroyFieldCard(chosCard);
+        }
+
+        return true;
     }
     public  List<Card> FindTarget(Func<Card, bool> targetCondition)
     {
@@ -151,20 +280,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
         }
         return targetCards; 
     }
-    public  void UseCard(Player player, Card card,GameObject field=null)
-    {
 
-        if (field!=null)
-        {
-            field.GetComponent<FieldUI>().Regist(card);
-        }
-        
-        card.Move(Card.CardStateEnum.InBattle);
-        
-        BattleSystemUI.instance.UseCard(player, card);
-
-
-    }
 
     #endregion
     #region 抽牌
@@ -188,7 +304,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
             return;
         }
        Card card = player.inDeckCards[0];
-       card.Move(Card.CardStateEnum.InHand);
+       card.Move(CardEnums.CardStateEnum.InHand);
         if (player==Player1)
         {
             BattleSystemUI.instance.DrawCard(true,player,card);
@@ -204,6 +320,24 @@ public class BattleSystem : QuickInstance<BattleSystem>
 
     #region Turn
 
+    public void StartTurn()
+    {
+        DrawCard(currentPlayer);
+        // 重置攻击
+        foreach (var card in currentPlayer.inFieldCards)
+        {
+            card.hasAttacked=false;
+        }
+
+        TriggerData triggerData = new TriggerData(currentPlayer);
+        EffectSystem.instance.TimingTrigger(CardEnums.TimingList.when_turn_start,triggerData);
+    }
+    public void EndTurn()
+    {
+        ChangerPlayer();
+        StartTurn();
+    }
+        
 
     public  void ChangerPlayer()
     {
@@ -261,4 +395,27 @@ public class BattleSystem : QuickInstance<BattleSystem>
     #endregion
 
 
+    #region 破坏与召唤
+
+    public  void DestroyFieldCard(Card card)
+    {
+        //状态处理
+        card.Move(CardEnums.CardStateEnum.InSoul);
+        Destroy(card.cardModel);
+        Debug.Log(card.player.inSoulCards.Count);
+    }
+
+    public void SummonCard(Card card,GameObject field)
+    {
+        // //状态处理
+        // if (field!=null)
+        // {
+        //     field.GetComponent<FieldUI>().Regist(card);
+        // }
+        
+        card.Move(CardEnums.CardStateEnum.InBattle,field.GetComponent<FieldUI>().field);
+        card.hasAttacked = true;
+    }
+
+    #endregion
 }

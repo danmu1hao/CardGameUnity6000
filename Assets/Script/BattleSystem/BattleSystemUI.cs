@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class BattleSystemUI : SimpleSingleton<BattleSystemUI>
+public class BattleSystemUI : QuickInstance<BattleSystemUI>
 {
-    public static BattleSystemUI instance { get; private set; }
 
-    bool chooseSlot;
+    #region 变量
     Card currentCard;
-    GameObject selectSlot;
+
 
     [SerializeField] GameObject unitPrefab;
     [SerializeField] GameObject playerBattleField;
@@ -21,22 +20,15 @@ public class BattleSystemUI : SimpleSingleton<BattleSystemUI>
     [SerializeField] GameObject playerHandCardField;
     [SerializeField] GameObject enemyHandCardField;
 
-    [SerializeField] TextMeshProUGUI playerCurrentMana;
-    [SerializeField] TextMeshProUGUI enemyCurrentMana;
-
     [SerializeField] GameObject playerDamageArea;
     [SerializeField] GameObject enemyDamageArea;
 
     [SerializeField] GameObject soulCardUIArea;
     
     [SerializeField] GameObject effectCardsUIArea;
+    
+    #endregion
 
-
-    void Start()
-    {
-
-        AllotField();
-    }
 
     public void AllotField()
     {
@@ -49,69 +41,67 @@ public class BattleSystemUI : SimpleSingleton<BattleSystemUI>
             BattleSystem.instance.Player2.fields[i].fieldModel.GetComponent<FieldUI>().Init(BattleSystem.instance.Player2.fields[i]);
         }
     }
-    
-    void Update()
-    {
-        if (chooseSlot && Input.GetMouseButtonDown(0))
-        {
-            RaycastHit2D hit = Physics2D.Raycast(Input.mousePosition, Vector2.zero);
-            if (hit.collider != null)
-            {
-                Debug.Log($"Hit UI element: {hit.collider.gameObject.name}");
-                chooseSlot = false;
-                selectSlot = hit.collider.gameObject;
-                BattleSystem.instance.UseCard(currentCard.player, currentCard,selectSlot);
-            }
-        }
-    }
 
-    public GameObject selectPanel;
-    public void ShowSelectPanel()
-    {
-
-    }
-
-
-    public void DestroyCard(Card card)
-    {
-        Destroy(card.cardModel);
-    }
 
     #region 使用卡牌
 
-    public void UseCardCheck(Player player, Card card)
-    {
-        card.cardModel.GetComponent<CardMouseInHand>().WaitingForClickUI();
-        currentCard = card;
-        chooseSlot = true;
-    }
 
-    public void UseCard(Player player, Card card)
+    public void UseCard(Card card,GameObject selectSlot=null)
     {
-        Destroy(card.cardModel);
-        GameObject cardModel = Instantiate(unitPrefab, selectSlot.transform);
-        cardModel.transform.localPosition = Vector3.zero;
-        cardModel.GetComponent<UnitCardDisplay>().Init(card);
-        card.cardModel = cardModel;
+        // 会不会有法术卡？
+        DeleteCard(card);
+        if (selectSlot!=null)
+        {
+            GameObject cardModel = Instantiate(unitPrefab, selectSlot.transform);
+            cardModel.transform.localPosition = Vector3.zero;
+            cardModel.GetComponent<UnitCardDisplay>().Init(card);
+            card.cardModel = cardModel;
+        }
+
+
     }
 
     #endregion
-     public void DrawCard(bool isPlayer, Player player, Card card)
-    {
 
-        GameObject cardModel;
+    #region 手卡UI动画
+
+    /// <summary>
+    /// 如果要加多人对战还是需要Player的
+    /// </summary>
+    public void DrawCard(bool isPlayer, Player player, Card card)
+    {
+        GameObject cardModel=GameObject.Instantiate(handCardPrefab);
+        cardModel.GetComponent<HandCardDisplay>().Init(card);
         if (isPlayer)
         {
-            cardModel = Instantiate(handCardPrefab, playerHandCardField.transform);
+            cardModel.transform.SetParent(playerHandCardField.transform);
+            StartCoroutine(playerHandCardField.GetComponent<DrawCardUI>().AddCard(cardModel.gameObject.GetComponent<RectTransform>()));
         }
         else
         {
-            cardModel = Instantiate(enemyHandCardPrefab, enemyHandCardField.transform);
+            cardModel.transform.SetParent(enemyHandCardField.transform);
+            StartCoroutine(enemyHandCardField.GetComponent<DrawCardUI>().AddCard(cardModel.gameObject.GetComponent<RectTransform>()));
         }
-        cardModel.GetComponent<HandCardDisplay>().Init(card);
+        
         card.cardModel = cardModel;
     }
 
+    // TODO 删卡
+    public void DeleteCard( Card card)
+    {
+        GameObject cardModel = card.cardModel;
+        if (card.player==BattleSystem.instance.Player1)
+        {
+            playerHandCardField.GetComponent<DrawCardUI>().DeleteCard(cardModel.gameObject.GetComponent<RectTransform>());
+        }
+        else
+        {
+            enemyHandCardField.GetComponent<DrawCardUI>().DeleteCard(cardModel.gameObject.GetComponent<RectTransform>());
+        }
+        GameObject.Destroy(cardModel);  
+    }
+
+    #endregion
 
 
     public void AddCardToDamageArea( List<Card> cards)
@@ -132,14 +122,19 @@ public class BattleSystemUI : SimpleSingleton<BattleSystemUI>
             cardModel.GetComponent<HandCardDisplay>().Init(card);
         }
     }
-
+    
     public void GameOver()
     {
         // 结束战斗处理
     }
-    
-    public  void DestoryModel(GameObject obj)
+
+    #region 工具方法
+
+    public static void DestoryModel(GameObject obj)
     {
         Destroy(obj);
     }
+
+    #endregion
+
 }

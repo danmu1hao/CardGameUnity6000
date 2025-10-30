@@ -9,18 +9,21 @@ public class Player:ITargetable
 
     public int Turn=0;
 
-    // fields: Íæ¼ÒÓµÓÐµÄ³¡µØÁÐ±íÉÏÏÞÎª3¸ö
     public List<Field> fields = new List<Field>(3);
+    public List<Card> inFieldCards => fields.Select(f => f.card).Where(c => c != null).ToList();
+    public List<Card> inSoulCards => 
+        fields.SelectMany(f => f.soulCards).Where(c => c != null).ToList();
 
 
-    #region ¿¨ÅÆÁÐ±í
-    // ¿¨ÅÆÁÐ±í
-    // inDeckCards: ÔÚÅÆ¿âÖÐµÄ¿¨ÅÆ
-    // inHandCards: ÔÚÊÖÅÆÖÐµÄ¿¨ÅÆ
-    // inBattleFieldCards : ÔÚÕ½³¡ÉÏµÄ¿¨ÅÆ£¨¼´ÔÚ³¡ÉÏµÄ¿¨ÅÆ£©
-    // inDamageCards: ÔÚÉËº¦ÇøµÄ¿¨ÅÆ
-    // inDiscardCards: ÔÚÆúÅÆÇøÖÐµÄ¿¨ÅÆ
-    // inSoulCards: ÔÚÁé»êÇøµÄ¿¨ÅÆ
+
+    #region ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½
+
+    // inDeckCards: ï¿½ï¿½ï¿½Æ¿ï¿½ï¿½ÐµÄ¿ï¿½ï¿½ï¿½
+    // inHandCards: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÐµÄ¿ï¿½ï¿½ï¿½
+    // inBattleFieldCards : ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ÏµÄ¿ï¿½ï¿½Æ£ï¿½ï¿½ï¿½ï¿½Ú³ï¿½ï¿½ÏµÄ¿ï¿½ï¿½Æ£ï¿½
+    // inDamageCards: ï¿½ï¿½ï¿½Ëºï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½
+    // inDiscardCards: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÐµÄ¿ï¿½ï¿½ï¿½
+    // inSoulCards: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½
 
 
     public List<Card> inDeckCards = new List<Card>(),
@@ -28,14 +31,11 @@ public class Player:ITargetable
         inDamageCards = new List<Card>(),
         inBattleFieldCards = new List<Card>();
 
-    public List<Card> inSoulCards = new List<Card>();
+
     public List<Card> inDiscardCards = new List<Card>();
     #endregion
 
 
-    public List<Card> inFieldCards => 
-        fields.SelectMany(f => (f.card != null ? new[] { f.card } : 
-        Enumerable.Empty<Card>()).Concat(f.soulCards ?? new List<Card>())).ToList();
 
 
 

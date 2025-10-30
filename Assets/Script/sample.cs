@@ -1,20 +1,32 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
+using System;
+using TMPro;
 
 public class sample : MonoBehaviour
 {
-    // Start is called before the first frame update
+    public Button confirmButton;
+    public TMP_InputField inputField;
+
     void Start()
     {
-
+        StartCoroutine(GameFlow());
     }
 
-    // Update is called once per frame
-    void Update()
+    private IEnumerator GameFlow()
     {
+        string result = null;
 
+        // 注册回调：当按钮点击时，把输入传回 result
+        confirmButton.onClick.AddListener(() =>
+        {
+            result = inputField.text;
+        });
+
+        // 等待直到 result 不为空
+        yield return new WaitUntil(() => result != null);
+
+        Debug.Log("玩家输入: " + result);
     }
-
-    
 }

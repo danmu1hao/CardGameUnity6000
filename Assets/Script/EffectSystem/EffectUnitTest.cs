@@ -8,7 +8,7 @@ public class EffectUnitTest : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        effect=new Test();
+        effect=new test();
     }
 
     // Update is called once per frame
