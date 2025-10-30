@@ -1,0 +1,3 @@
+效果ID	效果文字描述effect_text	效果effect	效果内容effect_detail	时点timing	条件codition	对象target	效果类型effecttype	持续时间effectDuration	代价类型cost_type	代价对象cost_target	卡牌流派 card style	额外信息_extra_info
+TEST_01	回合开始时，如果这张卡在自己手中，可以丢弃这张卡，额外抽取一张卡	when_turn_start;	self.state==InHand&&self.		draw_card;discard	active_skill	回合开始时，如果这张卡在自己手中，可以丢弃这张卡，额外抽取一张卡	when_turn_start;when_turn_start	self.state==InHand&&self.		draw_card;discard	active_skill
+TEST_02	回合开始时，如果这张卡在自己手中，可以丢弃这张卡，额外抽取一张卡	when_turn_start										follow.TEST_01
