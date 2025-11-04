@@ -31,9 +31,13 @@ public class CardInfoPanel : MonoBehaviour
         //cost.text = card.cardConfig.cost.ToString();
         
         attack.text = card.cardConfig.atk.ToString();
+        if (card.cardImage != null)
+        {
+            // 找到了图片，使用它
+            image.sprite = card.cardImage;
+        }
 
-        /*// Update the image
-        image.sprite = card.CardConfig.sprite;*/
+
     }
     [SerializeField] private float longPressTime = 0.5f; // 长按阈值（秒）
     [SerializeField]  float mouseDownTimer = 0f;
@@ -78,7 +82,7 @@ public class CardInfoPanel : MonoBehaviour
             if (mouseDownTimer < longPressTime)
             {
                 panel.SetActive(false);
-                Debug.Log("短按 → 关闭面板");
+
             }
 
             isHolding = false;

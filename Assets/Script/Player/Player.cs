@@ -50,10 +50,7 @@ public class Player:ITargetable
     public Player(int playerId)
     {
         this.playerId = playerId;
-        for (int i = 0; i < 3; i++)
-        {
-            fields.Add(new Field(this));
-        }
+
     }
 
 }

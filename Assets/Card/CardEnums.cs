@@ -5,7 +5,7 @@ public static class CardEnums
     {
         InDeck,     // 在牌库
         InHand,     // 在手牌
-        InBattle,   // 在场上
+        InField,   // 在场上
         InDamage,   // 在伤害区
         InDiscard,  // 在弃牌区/墓地
         InSoul      // 在灵魂/魂槽
@@ -22,7 +22,7 @@ public static class CardEnums
     public enum TimingList
     {
         when_turn_start, 
-        when_effect_active, 
+        when_effect_declare, 
         when_attack, 
         when_summon
     }
@@ -32,7 +32,7 @@ public static class CardEnums
     {
         Active,     // 主动（需要手动发动）
         Passive,    // 被动（满足条件自动触发）
-        Continuous  // 持续（常驻效果）
+        Action      // 行动（反应效果）
     }
 
     // 效果（动作/结果）

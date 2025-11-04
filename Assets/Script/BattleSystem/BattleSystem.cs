@@ -34,9 +34,9 @@ public class BattleSystem : QuickInstance<BattleSystem>
         players.Add(Player2);
         for (int i = 0; i < 3; i++)
         {
-            Field field = new Field(Player1);
+            Field field = new Field(Player1,i);
             Player1.fields.Add(field); 
-            Field field2 = new Field(Player2);
+            Field field2 = new Field(Player2,i);
             Player2.fields.Add(field2);
         }
     }
@@ -49,28 +49,24 @@ public class BattleSystem : QuickInstance<BattleSystem>
     {
         if (chooseSlot && Input.GetMouseButtonDown(0))
         {
-            RaycastHit2D hit = Physics2D.Raycast(Input.mousePosition, Vector2.zero);
-            
-            if (hit.collider.gameObject != null &&
-                hit.collider.gameObject.GetComponent<FieldUI>() != null )
-            {
-                Field field = hit.collider.gameObject.GetComponent<FieldUI>().field;
-                // 是当前玩家 对象没卡
-                if (field.player == currentPlayer && field.card == null)
-                {
-                    Debug.Log($"Hit UI element: {hit.collider.gameObject.name}");
-                    chooseSlot = false;
-                    GameObject selectSlot = hit.collider.gameObject;
+            RaycastHit2D[] hits = Physics2D.RaycastAll(Input.mousePosition, Vector2.zero);
 
-                    UseCard(currentCard.player, currentCard,selectSlot);
-                    currentCard = null;
-                }else 
+            foreach (var h in hits)
+            {
+                if (h.collider != null)
                 {
-                    ResetUseCard();
+                    FieldUI field = h.collider.GetComponent<FieldUI>();
+                    if (field != null)
+                    {
+                        CheckSummon(h);
+                        break; // 如果只要第一个找到的 FieldUI
+                    }
                 }
             }
         }
     }
+
+
 
     public void ResetUseCard()
     {
@@ -185,18 +181,21 @@ public class BattleSystem : QuickInstance<BattleSystem>
     public bool chooseSlot;
     public async Task<bool> UseCardCheck(Card card)
     {
+        // 用卡是一个流程
         if (card.player != currentPlayer || card.player==null)
         {
             return false;
         }
+
         if (card.sacrificeCost > 0)
         {
             Debug.Log("开始血祭");
             if (SacrificeCheck(card))
             {
-                bool success=await Sacrifice(card);
-                if (!success)
+                card.sacrificeTargets=await SacrificeCosts(card);
+                if (card.sacrificeTargets.Count==0)
                 {
+                    print("血祭失败");
                     return false;
                 }
             }
@@ -207,7 +206,25 @@ public class BattleSystem : QuickInstance<BattleSystem>
         }
         else if (card.soulCost > 0)
         {
-            SoulSummonCheck(card);
+            Debug.Log("开始灵魂召唤"+card.soulCost+"灵魂消耗"+card.player.inSoulCards.Count+"灵魂");
+            if (SoulSummonCheck(card))
+            {
+                card.soulTargets=await SoulCosts(card);
+                if (card.soulTargets.Count==0)
+                {
+                    Debug.Log("灵魂失败");
+                    return false;
+                }
+                else
+                {
+                    Debug.Log("灵魂选择成功");
+                }
+            }
+            else
+            {
+                return false;
+            }
+            
         }
         // BattleSystemUI.instance.UseCardCheck(player, card);
         // card.cardModel.GetComponent<CardMouseInHand>().WaitingForClickUI();
@@ -217,20 +234,42 @@ public class BattleSystem : QuickInstance<BattleSystem>
     }
     public  void UseCard(Player player, Card card,GameObject field=null)
     {
-
+        ExecuteSummonCost(card);
         if (card.cardType==CardEnums.CardType.Monster)
         {
             SummonCard(card,field);
         }
         BattleSystemUI.instance.UseCard(card,field);
     }
-    
+
+    void ExecuteSummonCost(Card card)
+    {
+        if (card.soulTargets.Count > 0)
+        {
+            foreach (var soulCard in card.soulTargets)
+            {
+                Debug.Log(soulCard.name+"进入墓地");
+                soulCard.Move(CardEnums.CardStateEnum.InDiscard);
+            }
+        }
+
+        if (card.sacrificeTargets.Count > 0)
+        {
+            foreach (var sacrificeCard in card.sacrificeTargets)
+            {
+                Debug.Log(sacrificeCard.name+"进入墓地");
+                DestroyFieldCard(sacrificeCard);
+            }
+
+        }
+    }
+
     public bool SoulSummonCheck(Card card)
     {
         // 确认灵魂是否足够
-        // List<Card> soulCards = FindTarget(CardInSoulField);
-        List<Card> soulCards=new List<Card>();
-        if (soulCards.Count> card.soulCost)
+
+        List<Card> soulCards = card.player.inSoulCards;
+        if (soulCards.Count>= card.soulCost)
         {
             return true;
         }
@@ -251,22 +290,28 @@ public class BattleSystem : QuickInstance<BattleSystem>
         return false;
     }
 
-    async Task<bool> Sacrifice( Card card)
+    async Task<List<Card>> SacrificeCosts( Card card)
     {
         //进入一个选择界面
-        List<Card> sacrificeCards = FindTarget(c => c.player == currentPlayer && c.CardState == CardEnums.CardStateEnum.InBattle);
+        List<Card> sacrificeCards = FindTarget(c => c.player == currentPlayer && c.state == CardEnums.CardStateEnum.InField);
         Debug.Log("找到祭品"+sacrificeCards.Count);
         List<Card> chosen = await UIManager.instance.OpenSelectPanel(sacrificeCards);
-        if (chosen.Count==0)
-        {
-            return false;
-        }
-        foreach (var chosCard in chosen)
+
+        /*foreach (var chosCard in chosen)
         {
             DestroyFieldCard(chosCard);
-        }
+        }*/
 
-        return true;
+        return chosen;
+    }
+    async Task<List<Card>> SoulCosts( Card card)
+    {
+        //进入一个选择界面
+        List<Card> soulCards = FindTarget(c => c.player == currentPlayer && c.state == CardEnums.CardStateEnum.InSoul);
+        Debug.Log("找到灵魂"+soulCards.Count);
+        List<Card> chosen = await UIManager.instance.OpenSelectPanel(soulCards);
+
+        return chosen;
     }
     public  List<Card> FindTarget(Func<Card, bool> targetCondition)
     {
@@ -299,6 +344,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
     
     public  void DrawCard(Player player)
     {
+        Debug.Log("执行抽卡");
         if (player.inDeckCards.Count<=0)
         {
             return;
@@ -397,6 +443,29 @@ public class BattleSystem : QuickInstance<BattleSystem>
 
     #region 破坏与召唤
 
+    /// <summary>
+    /// 这个方法是用来确认对象格子是否可以用于召唤的
+    /// </summary>
+    /// <param name="hit"></param>
+    private void CheckSummon(RaycastHit2D hit)
+    {
+        Field field = hit.collider.gameObject.GetComponent<FieldUI>().field;
+        Debug.Log($"Hit UI element: {hit.collider.gameObject.name}");
+        // 是当前玩家 对象没卡 || 对象有卡 但是，那个卡将会被牺牲
+
+
+        if (field.player == currentPlayer && field.card == null
+            || (field.card!=null && currentCard.sacrificeTargets.Contains(field.card)))
+        {
+            chooseSlot = false;
+            GameObject selectSlot = hit.collider.gameObject;
+
+            UseCard(currentCard.player, currentCard,selectSlot);
+            currentCard = null;
+        }
+
+    }
+    
     public  void DestroyFieldCard(Card card)
     {
         //状态处理
@@ -413,7 +482,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
         //     field.GetComponent<FieldUI>().Regist(card);
         // }
         
-        card.Move(CardEnums.CardStateEnum.InBattle,field.GetComponent<FieldUI>().field);
+        card.Move(CardEnums.CardStateEnum.InField,field.GetComponent<FieldUI>().field);
         card.hasAttacked = true;
     }
 

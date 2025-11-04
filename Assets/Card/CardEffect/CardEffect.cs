@@ -33,10 +33,19 @@ public class CardEffect
         this.effectTarget = new Card();
         
         this.effect = ReflactionSystem.FindClassByName<Effect>(effectConfig.effect);
+        if (effect == null)
+        {
+            effect = new NoneType();
+            Debug.Log("nonetype");
+        }
+        this.effect.cardEffect=this;
         
         this.condition = new Condition(SplitStr(effectConfig.condition),this); 
+        //TODO
         this.target = new Target();
-        this.cost = new Cost(SplitStr(effectConfig.cost),this);
+        //TODO
+        this.cost = new Cost(SplitStr(effectConfig.cost_type),this);
+        //TODO
         this.timing = new Timing();
 
         this.card = card;
@@ -44,6 +53,7 @@ public class CardEffect
         timing.LoadTiming(this.effectConfig.timing);
         Debug.Log(card.name+effectConfig.timing);
     }
+
 
     public string[] SplitStr(string str)
     {
@@ -62,11 +72,11 @@ public class CardEffect
         {
             Debug.Log(conditionStr);
             //所有条件必须全部满足
-            // if (!FieldResolver.Resolver(conditionStr,this.card,triggerData))
-            // {
-            //     
-            //     return false;
-            // }
+            if (!FieldResolver.Resolver(conditionStr,this.card,triggerData))
+            {
+                
+                return false;
+            }
         }
         //检查是否有支付cost的条件
 

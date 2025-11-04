@@ -95,9 +95,9 @@ public class SelectPanelManager : MonoBehaviour
         }
 
         checkButton.onClick.RemoveAllListeners();
-        checkButton.onClick.AddListener(ActiveSelectedCard);
+        checkButton.onClick.AddListener(ActiveSelectedEffect);
         cancelButton.onClick.RemoveAllListeners();
-        cancelButton.onClick.AddListener(CancelSelectedCard);
+        cancelButton.onClick.AddListener(CancelSelectedEffect);
         
         
         return _tcs_effect.Task; // 返回“还没完成的任务”
@@ -146,29 +146,7 @@ public class SelectPanelManager : MonoBehaviour
 
     void ActiveSelectedCard()
     {
-        // if (_currentSelected != null)
-        // {
-        //     Debug.Log($"[EffectPanel] 玩家选择发动卡牌：{_currentSelected.card.name}，共 {_currentSelected.card.canEffectList.Count} 个效果");
-        //
-        //     foreach (var cardEffect in _currentSelected.card.canEffectList)
-        //     {
-        //         Debug.Log($"[EffectPanel] 加入效果队列：{cardEffect.effectConfig.effectText}");
-        //         EffectSystem.instance.EnQueue(cardEffect);
-        //     }
-        // }
-        // else
-        // {
-        //     Debug.Log("[EffectPanel] 没有选中的卡牌，跳过发动");
-        // }
-        //
-        // _effectModelList.Remove(_currentSelected.GameObject());
-        // Debug.Log($"[EffectPanel] 当前剩余待选择卡数：{_effectModelList.Count}");
-        //
-        // if (_effectModelList.Count == 0)
-        // {
-        //     Debug.Log("[EffectPanel] 所有效果卡已处理，关闭面板");
-        //     ClosePanel();
-        // }
+
         List<Card> result = new List<Card>();
         if (_currentSelected.Count ==  _selectNum)
         {
@@ -186,6 +164,26 @@ public class SelectPanelManager : MonoBehaviour
     {
         List<Card> result = new List<Card>();
         _tcs?.SetResult(result);
+        ClosePanel();
+
+    }
+    
+    void ActiveSelectedEffect()
+    {
+        //TODO 选择效果而不是卡牌
+        CardEffect result = null;
+        if (_currentSelected.Count ==  _selectNum)
+        {
+            result= _currentSelected.Dequeue().card.cardEffectList[0];
+            _tcs_effect?.SetResult(result);
+            ClosePanel();
+        }
+
+    }
+
+    void CancelSelectedEffect()
+    {
+        _tcs_effect?.SetResult(null);
         ClosePanel();
 
     }

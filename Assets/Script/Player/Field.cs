@@ -10,10 +10,13 @@ public class Field
     
     public Card card;
     public List<Card> soulCards=new List<Card>();
-    public Field(Player player)
+    
+    public int fieldIndex;
+    public Field(Player player,int index)
     {
         this.player = player;
         soulCards = new List<Card>();
+        this.fieldIndex = index;
     }
 
 }

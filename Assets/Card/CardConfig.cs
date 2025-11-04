@@ -34,16 +34,19 @@ public struct CardConfig
         // 初始化 effectConfig
         effectConfig = new EffectConfig
         {
-            effectText = parts[7],
-            timing = parts[8],
-            condition = parts[9],
-            cost = parts[10],
-            target = parts[11],
-            effect = parts[12],
-            effectDetail = parts[13],
+            effectText     = parts[7],
+            timing         = parts[8],
+            condition      = parts[9],
+            target         = parts[10],
+            effect         = parts[11],
+            effectType     = parts[12],
+            effectDetail   = parts[13],
             effectDuration = parts[14],
-            extra = parts[15]
+            cost_type      = parts[15],
+            cost_target    = parts[16],
+            extra          = parts[17]
         };
+
     }
 
 }

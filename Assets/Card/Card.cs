@@ -4,12 +4,15 @@ using System.Collections.Generic;
 using System.Reflection;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Card :ITargetable
 {
     public Player player;
 
     public Field field;
+    
+    public Sprite cardImage;
     
     public int playerID => player.playerId;
 
@@ -22,7 +25,10 @@ public class Card :ITargetable
     // 卡牌的费用 灵魂或者血祭
     public int soulCost;
     public int sacrificeCost;
-
+    public List<Card> soulTargets = new List<Card>();
+    public List<Card> sacrificeTargets=new List<Card>();
+    
+    
     public CardEnums.CardType cardType
     {
         get
@@ -50,6 +56,14 @@ public class Card :ITargetable
         this.cardConfig = cardConfig;
         //字符串解析器
         CardEffect cardEffect = new CardEffect(cardConfig.effectConfig,this);
+        
+        Sprite sprite = Resources.Load<Sprite>("CardImage/" + this.id.ToString());
+        if (sprite!= null)
+        {
+            this.cardImage = sprite;
+        }
+
+        
         cardEffectList.Add(cardEffect);
     }
 
@@ -121,24 +135,28 @@ public class Card :ITargetable
     }
 
 
-    public CardEnums.CardStateEnum CardState;
+    public CardEnums.CardStateEnum state;
 
 
     public void Move(CardEnums.CardStateEnum newState,Field field=null)
     {
-        Leave(this.CardState);
+        Leave(this.state);
         MoveTo(newState,field);
-        Debug.Log("move from "+CardState);
+        Debug.Log("move from "+state);
         Debug.Log("move to "+newState);
-        this.CardState = newState;
+        this.state = newState;
     }
-
-    void Leave(CardEnums.CardStateEnum currentState,Field field=null)
+    
+    /// <summary>
+    ///  离开的时候，如果是在场上，照理来说必然会记录field，所以不用传入field
+    /// </summary>
+    /// <param name="currentState"></param>
+    void Leave(CardEnums.CardStateEnum currentState)
     {
-        if (currentState==CardEnums.CardStateEnum.InBattle && field!=null)
+        if (currentState==CardEnums.CardStateEnum.InField && field!=null)
         {
-            
-            field.card =  null;  
+            Debug.Log("field卡牌移除"+field.fieldIndex);
+            field.card =  null;
         }
         List<Card> cardList = GetCardListByState(currentState,field);
         if (cardList != null)
@@ -149,12 +167,12 @@ public class Card :ITargetable
 
     void MoveTo(CardEnums.CardStateEnum newState,Field field=null)
     {
-        if (newState==CardEnums.CardStateEnum.InBattle && field!=null)
+        if (newState==CardEnums.CardStateEnum.InField && field!=null)
         {
-            Debug.LogError("field is added");
+            Debug.LogError("add to field");
             this.field = field;
             field.card = this;
-        }  else if(newState==CardEnums.CardStateEnum.InBattle && field==null) {
+        }  else if(newState==CardEnums.CardStateEnum.InField && field==null) {
             Debug.LogError("field is null");
         }
         List<Card> cardList = GetCardListByState(newState);

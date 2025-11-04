@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
+
 
 public class HandCardDisplay : MonoBehaviour
 {
@@ -30,7 +31,7 @@ public class HandCardDisplay : MonoBehaviour
     {
         this.card = card;
         cardName.text = card.name;
-
+        
         if ( card.soulCost!=-1)
         {
             soulUI.SetActive(true);
@@ -47,5 +48,17 @@ public class HandCardDisplay : MonoBehaviour
 
         cardAtk.text = card.atk.ToString();
 
+
+        if (card.cardImage != null)
+        {
+            // 找到了图片，使用它
+            cardImage.sprite = card.cardImage;
+        }
+        /*else
+        {
+            // 没找到，什么也不做（或打印提示）
+            Debug.LogWarning($"未找到卡牌图片：CardImage/{card.id}");
+        }*/
+        
     }
 }

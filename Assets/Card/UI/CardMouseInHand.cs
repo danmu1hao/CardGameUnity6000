@@ -61,11 +61,14 @@ public class CardMouseInHand : MonoBehaviour, IDragHandler, IEndDragHandler, IBe
         {
             WaitingForClickUI();
             bool canUse = await BattleSystem.instance.UseCardCheck(card);
-
+            
             if (!canUse)
             {
                 // 情况2：使用失败 → 回到原坐标
+                card.sacrificeTargets.Clear();
+                card.soulTargets.Clear();
                 MoveBack();
+                Debug.Log("卡牌使用失败，回到原位置");
             }
             else
             {

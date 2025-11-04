@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
+
 
 public class UnitCardDisplay : MonoBehaviour
 {
@@ -44,5 +45,11 @@ public class UnitCardDisplay : MonoBehaviour
 
         cardAtk.text = card.atk.ToString();
 
+        
+        if (card.cardImage != null)
+        {
+            // 找到了图片，使用它
+            cardImage.sprite = card.cardImage;
+        }
     }
 }

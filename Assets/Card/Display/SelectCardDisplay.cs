@@ -34,6 +34,8 @@ public class SelectCardDisplay : MonoBehaviour, IPointerClickHandler
     [SerializeField]Image cardImage;
 
     SelectPanelManager _selectPanelManager;
+
+
     public void Init(Card card,SelectPanelManager selectPanelManager)
     {
         this.card = card;
@@ -43,6 +45,13 @@ public class SelectCardDisplay : MonoBehaviour, IPointerClickHandler
         cardName.text = card.name;
 
         cardAtk.text = card.atk.ToString();
+            
+        if (card.cardImage != null)
+        {
+            // 找到了图片，使用它
+            cardImage.sprite = card.cardImage;
+        }
     }
 
+    
 }

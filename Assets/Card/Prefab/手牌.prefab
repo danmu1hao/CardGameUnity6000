@@ -645,8 +645,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294705407
+  m_fontColor: {r: 1, g: 0, b: 0.98875713, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -766,6 +766,7 @@ MonoBehaviour:
   cardSoulCostText: {fileID: 8449413712812469279}
   cardSacrifiseCostText: {fileID: 6369935414192568419}
   cardAtk: {fileID: 2337815696674412941}
+  cardImage: {fileID: 1869631188636533164}
   soulUI: {fileID: 68353051628803889}
   sacrificeUI: {fileID: 4559999066849693045}
 --- !u!114 &7325922666906787600

@@ -22,6 +22,7 @@ public class EffectSystem : QuickInstance<EffectSystem>
     /// <param name="triggerData"></param>
     public async Task TimingTrigger(CardEnums.TimingList timing, TriggerData triggerData)
     {
+        Debug.Log("时点触发 "+timing.ToString());
         await PlayerAcitveEffects(timing, triggerData);
         await ProcessChain();
     }
@@ -31,7 +32,7 @@ public class EffectSystem : QuickInstance<EffectSystem>
     {
         // 注意，每个时点都是一个完整stack链条
         // 刷新
-        _temp_chainStack = null;
+        _temp_chainStack = new Stack<CardEffect>();
         // 把所有的能发动效果的卡给我
         List<CardEffect> cardEffects=CheckEffectWithTiming(timing,triggerData);
         List<CardEffect> playerEffects,enemyEffects=new List<CardEffect>();
@@ -39,7 +40,9 @@ public class EffectSystem : QuickInstance<EffectSystem>
         playerEffects = cardEffects.Where(x => x.card.player == BattleSystem.instance.currentPlayer).ToList();
         enemyEffects= cardEffects.Where(x => x.card.player !=  BattleSystem.instance.currentPlayer).ToList();
         // 按照顺序询问
+        Debug.Log("询问玩家效果");
         await SelectCards_PopStacks(playerEffects);
+        Debug.Log("询问敌方效果");
         await SelectCards_PopStacks(enemyEffects);
         
         //最后加入
@@ -49,15 +52,25 @@ public class EffectSystem : QuickInstance<EffectSystem>
     // 展示 → 选择 → 入队
     async Task SelectCards_PopStacks(List<CardEffect> cardEffect)
     {
+        //其实发过去的是卡牌 准确说是卡牌的可执行的效果
+        List<CardEffect> cardEffect_temp=new List<CardEffect>(cardEffect);
+        List<Card> cards= cardEffect_temp.Select(x => x.card).ToList();
         //准确来说是可以发动的卡效果，每次支付要更新的
-        while(cardEffect.Count>0)
+        while(cards.Count>0)
         {
             // 我可以补选的
-            CardEffect selectEffect= await UIManager.instance.OpenSelectPanel(cardEffect);
+            //TODO 这里目前没判断选哪个效果
+            Debug.Log("等待选择效果");
+            CardEffect selectEffect= await UIManager.instance.OpenSelectPanel(cardEffect_temp);
+            await Task.Delay(50); // 等待 0.1 秒
+            Debug.Log("选择效果返回 "+(selectEffect!=null?selectEffect.effectConfig.effectText:"空"));
             if (selectEffect!=null)
             {
                 //之后加
                 PayCost(selectEffect);
+                // TODO 我需要移除那个选择的对象
+                Debug.Log("选择了效果 "+selectEffect.effectConfig.effectText);
+                cards.Remove(selectEffect.card);
                 _temp_chainStack.Push(selectEffect);
             }
             else
@@ -65,11 +78,12 @@ public class EffectSystem : QuickInstance<EffectSystem>
                 break;
             }
         }
-        
+
     }
     // 连锁处理循环  只负责执行
     async Task ProcessChain()
     {
+        Debug.Log("效果开始执行");
         while (_chainStack.Count > 0)
         {
             // 取出最上层的小栈，看看是不是空
@@ -84,9 +98,10 @@ public class EffectSystem : QuickInstance<EffectSystem>
             // 取出小栈里最新的效果
             // 看来不用我吐回去
             var currentEffect = currentStack.Pop();
-            _temp_chainStack.Clear();
+
             
             // 执行宣言，确认链条是否更新,这里我们放弃bool的传递了，我们直接用检测是否新效果stack为空
+            _temp_chainStack.Clear();
             await DeclareEffect(currentEffect);
 
             if (_temp_chainStack.Count!=0)
@@ -147,6 +162,10 @@ public class EffectSystem : QuickInstance<EffectSystem>
 
     bool CheckSingleEffect(CardEffect effect, TriggerData triggerData, CardEnums.TimingList timing)
     {
+        if (effect.effect is NoneType)
+        {
+            return false;
+        }
         // 1. 时点检测
         if (!CheckTiming(effect, timing)) return false;
 
@@ -199,7 +218,7 @@ public class EffectSystem : QuickInstance<EffectSystem>
     {
 
         // 3. 如果有响应效果，加入到新的小栈中
-        _temp_chainStack.Push(currentEffect);
+        /*_temp_chainStack.Push(currentEffect);*/
     }
     
     int _effectTestCounter = 0; // 用于测试的计数器
