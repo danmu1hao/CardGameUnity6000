@@ -105,7 +105,7 @@ public class Card :ITargetable
             case CardEnums.CardStateEnum.InDamage:
                 return player.inDamageCards;
 
-            case CardEnums.CardStateEnum.InDiscard:
+            case CardEnums.CardStateEnum.InCemetery:
                 return player.inDiscardCards;
 
             case CardEnums.CardStateEnum.InSoul:

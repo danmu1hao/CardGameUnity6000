@@ -7,6 +7,6 @@
 6,DZE-2,1,,1,,Monster,当己方有卡因为效果加入伤害区（不包括效果伤害）时，支付cost可以发动：选择对方角色区中一位角色，那个角色的攻击力-2.,,,,,,,,,,
 7,E-1,1,,,,Spell,①此卡也可以从伤害区发动 ②选择己方角色区中一张变为灵魂的角色卡，支付其cost来发动：将其召唤。若其角色区已经存在角色，那个角色变为其灵魂。,,,,,,,,,,
 100,TEST,3,,0,,Monster,无效对面效果,when_effect_declare,,,canel_effect,Action,,,,,
-101,TESTDRAW,4,,0,,Monster,攻击时可以抽卡,when_attack,self.state==InField,,draw_card,Active,,,,,
+101,TESTDRAW,4,,0,,Monster,攻击时可以抽卡,when_attack,"self.state==InField,attacker=self",,draw_card,Active,,,,,
 102,TESTSOUL,5,1,,,Monster,,,,,,,,,,,
 103,TESTSACRI,6,,1,,Monster,,,,,,,,,,,

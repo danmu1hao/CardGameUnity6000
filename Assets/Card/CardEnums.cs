@@ -7,7 +7,7 @@ public static class CardEnums
         InHand,     // 在手牌
         InField,   // 在场上
         InDamage,   // 在伤害区
-        InDiscard,  // 在弃牌区/墓地
+        InCemetery,  // 在弃牌区/墓地
         InSoul      // 在灵魂/魂槽
     }
 

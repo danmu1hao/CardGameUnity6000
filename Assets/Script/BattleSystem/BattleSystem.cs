@@ -249,7 +249,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
             foreach (var soulCard in card.soulTargets)
             {
                 Debug.Log(soulCard.name+"进入墓地");
-                soulCard.Move(CardEnums.CardStateEnum.InDiscard);
+                soulCard.Move(CardEnums.CardStateEnum.InCemetery);
             }
         }
 

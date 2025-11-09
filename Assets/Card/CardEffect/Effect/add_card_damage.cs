@@ -2,8 +2,9 @@
 
 // 增减伤害区
 
-public class add_damage : Effect
+public class add_card_damage : Effect
 {
+    
     public override void EffectExecute()
     {
         base.EffectExecute();
