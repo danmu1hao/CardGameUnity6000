@@ -7,8 +7,8 @@ public class FieldResolverTester : MonoBehaviour
     {
         // 构造测试卡牌
         var card = new Card();
-        card.cardConfig = new CardConfig();
-        card.cardConfig.type = "abc";
+        card.CardConfig = new CardConfig();
+        card.CardConfig.type = "abc";
         card.atk = 5;
         card.name = "TestCard";
 

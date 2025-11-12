@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Effect
+public abstract class AtomicEffect
 {
     public CardEffect cardEffect;
     int effectNum;  
     public List<Card> targetCardList=new List<Card>();
-    // 对象啥的自己去找
+    // 
     public virtual void EffectExecute()
     {
         if (cardEffect == null)

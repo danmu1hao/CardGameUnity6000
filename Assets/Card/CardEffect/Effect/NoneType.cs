@@ -1,4 +1,4 @@
-public class NoneType : Effect
+public class NoneType : AtomicEffect
 {
     
 }

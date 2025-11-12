@@ -4,28 +4,31 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GameManager : QuickInstance<GameManager>
 {
-    public TextAsset playerDeck;
-    public TextAsset enemyDeck;
+    [SerializeField]TextAsset playerDeck;
+    TextAsset enemyDeck;
     public Dictionary<int, CardConfig> cardConfigDict = new Dictionary<int, CardConfig>();
+    public Dictionary<int, List<EffectConfig>> effectConfigDict = new Dictionary<int, List<EffectConfig>>();
 
     public void Start()
     {
         ReadCardData();
+        ReadEffectData();
+        
         BattleSystem.instance.BattleStart();
 
     }
 
-    public TextAsset excelFile;
+    TextAsset cardcsvFile;
+    TextAsset effectcsvFile;
     public string[] cardData;
     public void ReadCardData()
     {
-        string textFile = excelFile.text;
+        string textFile = cardcsvFile.text;
         cardData = textFile.Split('\n');
-
-        Debug.Log(cardData);
 
         for (int i = 1; i < cardData.Length; i++) // 从第1行开始，跳过第0行
         {
@@ -39,6 +42,35 @@ public class GameManager : QuickInstance<GameManager>
         }
     }
 
+    /// <summary>
+    /// effect id格式暂定为 xxxx卡牌id + 第x个效果 + 第x个具体效果
+    /// 可以根据卡牌id 找到所有卡牌关联效果，然后创造效果类
+    /// </summary>
+    public void ReadEffectData()
+    {
+        string textFile = effectcsvFile.text;
+        string[] effectData = textFile.Split('\n');
+
+        for (int i = 1; i < effectData.Length; i++) // 从第1行开始，跳过第0行
+        {
+            string line = effectData[i];
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            Debug.Log(line);
+            
+            EffectConfig effect = new EffectConfig(line);
+            if (!effectConfigDict.ContainsKey(effect.effectID))
+            {
+                effectConfigDict.Add(effect.effectID, new List<EffectConfig> { effect });
+            }
+            else
+            {
+                effectConfigDict[effect.effectID].Add(effect);
+            }
+
+
+        }
+    }
     /*
     Debug.Log(cardConfigDict.Count);
     foreach (var VARIABLE in cardConfigDict)

@@ -26,7 +26,7 @@ public class SelectPanelManager : MonoBehaviour
         for (int i = 0; i < 10; i++)
         {
             Card card=new Card();
-            card.cardConfig.name = i.ToString();
+            card.CardConfig.name = i.ToString();
             testCards.Add(card);    
         }
         

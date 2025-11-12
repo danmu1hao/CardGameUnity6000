@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-public class test_skill : Effect
+public class test_skill : AtomicEffect
 {
     public override void EffectExecute()
     {

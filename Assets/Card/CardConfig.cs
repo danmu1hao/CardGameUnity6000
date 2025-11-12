@@ -1,21 +1,20 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using NUnit.Framework;
+using UnityEngine;
 
 public struct CardConfig
 {
     public int id;
     public string name;
     public int atk;
-
-
-
-    public string tribe;
-    public string type;
-    public EffectConfig effectConfig;
-
     // 卡牌的费用 灵魂或者血祭
     public int soulCost;
     public int sacrificeCost;
+    
+    public string tribe;
+    public string type;
 
+    public string[]  effectDescription;
     public CardConfig(string cardData)
     {
         var parts = cardData.Split(',');
@@ -30,22 +29,8 @@ public struct CardConfig
 
         tribe = parts[5];
         type = parts[6];
+        effectDescription=parts[7].Split(';');
 
-        // 初始化 effectConfig
-        effectConfig = new EffectConfig
-        {
-            effectText     = parts[7],
-            timing         = parts[8],
-            condition      = parts[9],
-            target         = parts[10],
-            effect         = parts[11],
-            effectType     = parts[12],
-            effectDetail   = parts[13],
-            effectDuration = parts[14],
-            cost_type      = parts[15],
-            cost_target    = parts[16],
-            extra          = parts[17]
-        };
 
     }
 

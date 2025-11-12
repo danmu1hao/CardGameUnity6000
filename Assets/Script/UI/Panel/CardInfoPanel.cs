@@ -24,13 +24,14 @@ public class CardInfoPanel : MonoBehaviour
     public void UpdatePanelUI(Card card)
     {
         // Update the text fields with CardConfig data
-        name.text = card.cardConfig.name;
-        description.text = card.cardConfig.effectConfig.effectText;
+        name.text = card.CardConfig.name;
+        // TODO 多效果显示
+        description.text = card.CardConfig.effectDescription[0];
 
         // 两种UI显示
         //cost.text = card.cardConfig.cost.ToString();
         
-        attack.text = card.cardConfig.atk.ToString();
+        attack.text = card.CardConfig.atk.ToString();
         if (card.cardImage != null)
         {
             // 找到了图片，使用它

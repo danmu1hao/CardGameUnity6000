@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class draw_card: Effect
+public class draw_card: AtomicEffect
 {
     public override void EffectExecute()
     {

@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class EffectUnitTest : MonoBehaviour
 {
-    Effect effect;
+    AtomicEffect _atomicEffect;
     // Start is called before the first frame update
     void Start()
     {
-        effect=new test();
+        _atomicEffect=new test();
     }
 
     // Update is called once per frame

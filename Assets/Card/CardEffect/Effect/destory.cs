@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public class destory : Effect
+public class destory : AtomicEffect
 {
     public override void EffectExecute()
     {

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class CardEffect
 {
+    public int playerID => this.card.playerID;
+    
     public EffectConfig effectConfig;
     public Card card; // 拥有这个效果的卡牌
 
@@ -18,13 +20,23 @@ public class CardEffect
     #endregion
 
     public Card effectTarget;
-    public Effect effect;
+    public AtomicEffect AtomicEffect;
     public Condition condition;
     public Target target;
-    public Cost cost;
+
     public Timing timing;
 
+
+    /// <summary>
+    /// 前置效果代价支付 好麻烦。 如果确认发动则继续执行
+    /// </summary>
+    public List<AtomicEffect> preEffectList = new List<AtomicEffect>();
     public  List<ITargetable> effectTargetList = new List<ITargetable>();
+
+    /// <summary>
+    /// 原子执行效果，只负责效果执行
+    /// </summary>
+    public List<AtomicEffect> subEffectList = new List<AtomicEffect>();
     
     public CardEffect(EffectConfig effectConfig,Card card)
     {
@@ -32,19 +44,18 @@ public class CardEffect
         
         this.effectTarget = new Card();
         
-        this.effect = ReflactionSystem.FindClassByName<Effect>(effectConfig.effect);
-        if (effect == null)
+        this.AtomicEffect = ReflactionSystem.FindClassByName<AtomicEffect>(effectConfig.effect);
+        if (AtomicEffect == null)
         {
-            effect = new NoneType();
+            AtomicEffect = new NoneType();
             Debug.Log("nonetype");
         }
-        this.effect.cardEffect=this;
+        this.AtomicEffect.cardEffect=this;
         
         this.condition = new Condition(SplitStr(effectConfig.condition),this); 
         //TODO
         this.target = new Target();
-        //TODO
-        this.cost = new Cost(SplitStr(effectConfig.cost_type),this);
+
         //TODO
         this.timing = new Timing();
 
@@ -80,17 +91,10 @@ public class CardEffect
         }
         //检查是否有支付cost的条件
 
-        CheckCost();
-        
         return true;
     }
 
-    void CheckCost()
-    {
-        //waiting
-        
-    }
-    
+
 
 
     void CheckTarget()
@@ -110,7 +114,7 @@ public class CardEffect
 
         List<ITargetable> targetList=Target.FindTarget(effectConfig.target, card, triggerData);
         
-        effect.EffectExecute();        
+        AtomicEffect.EffectExecute();        
 
         await Task.Delay(500); // 动画等待时间
     }

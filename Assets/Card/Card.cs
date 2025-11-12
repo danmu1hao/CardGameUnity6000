@@ -1,14 +1,13 @@
 using System;
-using System.Collections;
+
 using System.Collections.Generic;
-using System.Reflection;
-using Unity.VisualScripting;
+
 using UnityEngine;
-using UnityEngine.UIElements;
+
 
 public class Card :ITargetable
 {
-    public Player player;
+    public readonly Player player;
 
     public Field field;
     
@@ -16,33 +15,36 @@ public class Card :ITargetable
     
     public int playerID => player.playerId;
 
-    public CardConfig cardConfig;
+    public CardConfig CardConfig;
+    public List<EffectConfig> EffectConfig;
     
     public int id;
     public string name;
     public int atk;
 
     // 卡牌的费用 灵魂或者血祭
-    public int soulCost;
-    public int sacrificeCost;
+    public readonly  int soulCost;
+    public readonly  int sacrificeCost;
+    
+    public List<CardEffect> cardEffectList=new List<CardEffect>();
+    
     public List<Card> soulTargets = new List<Card>();
     public List<Card> sacrificeTargets=new List<Card>();
     
-    
-    public CardEnums.CardType cardType
+    public CardEnums.CardType CardType
     {
         get
         {
-            if (Enum.TryParse<CardEnums.CardType>(cardConfig.type, out var result))
+            if (Enum.TryParse<CardEnums.CardType>(CardConfig.type, out var result))
                 return result;
             else
-                throw new Exception($"无效的 CardType: {cardConfig.type}");
+                throw new Exception($"无效的 CardType: {CardConfig.type}");
         }
     }
 
     public GameObject cardModel;
 
-    public bool hasAttacked;
+    #region constructor
 
     public Card(Player player, CardConfig cardConfig)
     {
@@ -53,10 +55,8 @@ public class Card :ITargetable
         this.sacrificeCost = cardConfig.sacrificeCost;
         this.soulCost = cardConfig.soulCost;
 
-        this.cardConfig = cardConfig;
-        //字符串解析器
-        CardEffect cardEffect = new CardEffect(cardConfig.effectConfig,this);
-        
+        this.CardConfig = cardConfig;
+
         Sprite sprite = Resources.Load<Sprite>("CardImage/" + this.id.ToString());
         if (sprite!= null)
         {
@@ -64,12 +64,19 @@ public class Card :ITargetable
         }
 
         
-        cardEffectList.Add(cardEffect);
+        // TODO 效果字符串处理 格式为 卡牌ID4位 效果1位 子效果1位
+        List<EffectConfig> effectConfigList = GameManager.instance.effectConfigDict[id];
+        foreach (var effectConfig in effectConfigList)
+        {
+            CardEffect cardEffect = new CardEffect(effectConfig,this);
+            cardEffectList.Add(cardEffect);
+        }
+        
     }
 
     public Card()
     {
-        cardConfig = new CardConfig();
+        CardConfig = new CardConfig();
     }
     /*public static Card TestCard()
     {
@@ -77,19 +84,25 @@ public class Card :ITargetable
         return new Card(BattleSystem.Player1 ,cardConfig);
     }*/
 
+
+    #endregion
+
     public static Card QuickCardSample()
     {
         return new Card();
     }
-    
-    public List<CardEffect> cardEffectList=new List<CardEffect>();
 
+
+    #region EffectVarible
     
     public bool cancelFight;
+    public bool hasAttacked;
 
-    #region  CardState
+    
 
+    #endregion
 
+    #region  CardState And Move
     /// 返回卡牌的玩家的对应列表
     /// 注意：如果是在field上单独判断
     public List<Card> GetCardListByState(CardEnums.CardStateEnum state,Field targetField=null)

@@ -1,12 +1,21 @@
-﻿id,name,atk,soulCost,sacrificeCost,tribe,type,effectText,timing,condition,target,effect,effecttype,effectDetail,effectDuration,cost_type,cost_target,extra
-1,DZC-1,3,0,,DZC,Monster,当对方攻击己方名字中带有【DZC】的角色时发动：将此卡从手卡加入伤害区，将那次攻击无效。,when_attack,self.state==InHand&&attacker.playerID!=self.playerID,cardType==DZC,cancel_fight,,,,,,
-2,DZC-2,4,,0,DZC,Monster,当己方伤害区中有5张卡及以上时，将此卡从手卡加入伤害区，选择对方角色区里的一位角色发动：那张卡变为灵魂。,伤害区更新,伤害区卡牌>5,从,,,,,,,
-3,DZC-3,6,,1,DZC,Monster,此卡支付cost召唤成功时，己方受到2点效果伤害。,召唤怪兽,召唤成功,造成伤害,2,,,,,,
-4,DZC-4,3,1,,,Monster,己方主要阶段，选择此卡拥有的一张cost低于此卡cost的名带【DZC】的灵魂来发动：将此卡变为灵魂，那张卡在此角色区重生。,,,,,,,,,,
-5,DZE-1,1,,1,,Monster,①位于手卡的此卡支付cost发动后，进入己方伤害区。②位于伤害区的此卡，在己方主要行动阶段仅有一次发动：选择己方场上的【DZC】角色，将那张卡加入伤害区，给予对方其攻击力数值的效果伤害。,,,,,,,,,,
-6,DZE-2,1,,1,,Monster,当己方有卡因为效果加入伤害区（不包括效果伤害）时，支付cost可以发动：选择对方角色区中一位角色，那个角色的攻击力-2.,,,,,,,,,,
-7,E-1,1,,,,Spell,①此卡也可以从伤害区发动 ②选择己方角色区中一张变为灵魂的角色卡，支付其cost来发动：将其召唤。若其角色区已经存在角色，那个角色变为其灵魂。,,,,,,,,,,
-100,TEST,3,,0,,Monster,无效对面效果,when_effect_declare,,,canel_effect,Action,,,,,
-101,TESTDRAW,4,,0,,Monster,攻击时可以抽卡,when_attack,"self.state==InField,attacker=self",,draw_card,Active,,,,,
-102,TESTSOUL,5,1,,,Monster,,,,,,,,,,,
-103,TESTSACRI,6,,1,,Monster,,,,,,,,,,,
+﻿id,name,atk,soulCost,sacrificeCost,tribe,type,effectDescription
+1,DZC-1,3,0,,DZC,Monster,
+2,DZC-2,4,,0,DZC,Monster,
+3,DZC-3,6,,1,DZC,Monster,
+4,DZC-4,3,1,,,Monster,
+5,DZE-1,1,,1,,Monster,
+6,DZE-2,1,,1,,Monster,
+7,E-1,1,,,,Spell,
+90000001,TESTDRAW,4,,0,,Monster,当这张卡攻击时，你可以选择是否抽取一张手卡
+90000002,TESTSOUL,5,1,,,Monster,回合开始时，如果这张牌在手牌，你可以丢弃这张牌，抽一张牌
+90000003,TESTSACRI,6,,1,,Monster,回合开始时，如果这张牌在牌库，你可以选择丢弃一张手牌，抽取这张牌;这种牌在手牌中时，你可以丢弃一张除这张卡以外的手牌，特殊召唤一个攻击力为2的怪兽
+,,,,,,,
+90000004,TEST_DISDRAW,1,,0,TEST,Monster,回合开始时，如果你的伤害区有这张卡，你可以对对方造成一点伤害，然后从伤害区移除这张卡
+90000005,TEST_MULTIEFFECT,2,,0,TEST,Monster, 当对方宣言效果的时候，你可以发动这张卡的效果，丢弃这张卡，使对方宣言的效果无法发动
+90000006,TEST_DAMAGE,3,,0,TEST,Monster,这张卡在伤害区时，你的所有卡攻击力提升1
+90000007,TEST_NEGATE,4,,0,TEST,Monster,这张卡被破坏时不是变为灵魂而是送入对手的伤害区
+90000008,TEST_CONTINUOUS,5,,0,TEST,Monster,
+90000009,TEST_TRIGGER,6,,0,TEST,Monster,
+,,,,,,,
+90000010,TEST_SPELL,,,,TEST,SPELL,
+90000011,TEST_COST,6,,,TEST,Monster,

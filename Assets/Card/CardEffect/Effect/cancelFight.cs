@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-public class cancel_Fight: Effect
+public class cancel_Fight: AtomicEffect
 {
     public override void EffectExecute()
     {

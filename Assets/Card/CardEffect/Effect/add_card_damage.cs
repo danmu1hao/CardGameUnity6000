@@ -2,7 +2,7 @@
 
 // 增减伤害区
 
-public class add_card_damage : Effect
+public class add_card_damage : AtomicEffect
 {
     
     public override void EffectExecute()

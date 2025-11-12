@@ -162,7 +162,7 @@ public class EffectSystem : QuickInstance<EffectSystem>
 
     bool CheckSingleEffect(CardEffect effect, TriggerData triggerData, CardEnums.TimingList timing)
     {
-        if (effect.effect is NoneType)
+        if (effect.AtomicEffect is NoneType)
         {
             return false;
         }

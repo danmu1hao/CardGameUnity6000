@@ -235,7 +235,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
     public  void UseCard(Player player, Card card,GameObject field=null)
     {
         ExecuteSummonCost(card);
-        if (card.cardType==CardEnums.CardType.Monster)
+        if (card.CardType==CardEnums.CardType.Monster)
         {
             SummonCard(card,field);
         }
