@@ -17,7 +17,20 @@ public static class CardEnums
         Monster,    // 怪兽
         Spell       // 魔法
     }
+    public enum ClassEnum
+    {
+        // 这个比较特殊
+        Target,
+        
+        CurrentPlayer,
+        Me,
+        Op,
+        
+        Self,
 
+        Defender,
+        Attacker
+    }
     // 时点 / 触发时机
     public enum TimingList
     {
@@ -45,23 +58,6 @@ public static class CardEnums
         // 未来可以继续扩展：Destroy, Heal, Buff, Debuff ...
     }
 
-    // 代价类型
-    public enum CostType
-    {
-        None,
-        Sacrifice,  // 献祭
-        Discard     // 丢弃
-        // 以后可以加：PayLife, RemoveSoul 等
-    }
-    
 
-    // 对象限制（谁是效果目标）
-    public enum Target
-    {
-        None,
-        Self,       // 自身
-        Opponent,   // 对手
-        CardType,   // 特定卡牌类型
-        CardState   // 特定卡牌状态
-    }
+
 }

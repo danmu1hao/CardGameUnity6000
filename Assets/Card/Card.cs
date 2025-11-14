@@ -1,11 +1,11 @@
 using System;
 
 using System.Collections.Generic;
-
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 
 
-public class Card :ITargetable
+public class Card :IClassResolver
 {
     public readonly Player player;
 
@@ -201,5 +201,14 @@ public class Card :ITargetable
 
     #endregion
 
+    #region Resolvers
+
+    public string TryResolveCard(string resolveContent)
+    {
+        Debug.Log(resolveContent);
+        return null;
+    }
+
+    #endregion
 
 }

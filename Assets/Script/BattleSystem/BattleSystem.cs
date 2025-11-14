@@ -23,6 +23,20 @@ public class BattleSystem : QuickInstance<BattleSystem>
     /// </summary>
     public Player Player1 = new Player(0);
     public  Player Player2 = new Player(1);
+
+    public List<Card> allCardsInBattle => players.SelectMany(p => p.AllCards).ToList();
+
+    public Player GetPlayer(int playerID,bool isPlayer)
+    {
+        if (Player1.playerId == playerID)
+        {
+            return Player1;
+        }
+        else
+        {
+            return Player2;
+        }
+    }
     public  Player currentPlayer;
 
     public void Init()
@@ -76,7 +90,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
         
     }
 
-    #region 战斗
+    #region 战斗系统
 
     public async Task BattleConfirm(Card attker, GameObject hitObj)
     {
@@ -328,7 +342,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
 
 
     #endregion
-    #region 抽牌
+    #region 卡牌系统
 
     public  void DrawCard(Card card)
     {
@@ -362,9 +376,28 @@ public class BattleSystem : QuickInstance<BattleSystem>
         
     }
 
+    public void DisCard(Player player,Card card)
+    {
+        Debug.Log("执行丢卡");
+        if (!player.inHandCards.Contains(card))
+        {
+            Debug.Log("玩家手里并不存在这张卡");
+            return;
+        }
+
+        card.Move(CardEnums.CardStateEnum.InCemetery);
+        if (player==Player1)
+        {
+            BattleSystemUI.instance.DeleteCard(card);
+        }
+        else
+        {
+            BattleSystemUI.instance.DeleteCard(card);
+        }
+    }
     #endregion
 
-    #region Turn
+    #region 回合系统
 
     public void StartTurn()
     {

@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Unity.VisualScripting;
 using UnityEngine;
+
+using ClassEnum = CardEnums.ClassEnum;
 
 public static class FieldResolver
 {
@@ -25,6 +28,8 @@ public static class FieldResolver
         // 使用你已有的方法提取左边变量的值
         string leftValue = GetVaribleData(leftRaw, card, triggerData);
         string rightValue = GetVaribleData(rightRaw, card, triggerData);
+        if(leftValue=="null"||rightValue=="null"){Debug.LogError("resolve fail");return false;}
+        // ( leftValue op rightValue)
         // 重组为简单表达式字符串，如 "5 > 3"
         string evalExpression = $"{leftValue} {op} {rightValue}";
 
@@ -39,67 +44,108 @@ public static class FieldResolver
         if (string.IsNullOrEmpty(keyword)) return "";
         /*Debug.Log(keyword);*/
         // 判断是否带有属性访问符（.）
+        // 只有1个的情况
         var parts = keyword.Split('.');
         if (parts.Length == 1)
         {
             Debug.Log("这个不需要解析"+keyword);
             return keyword;
         }
-
-        string cardName = parts[0].Trim().ToLower();   // 如 attacker
-        string fieldName = parts[1].Trim();            // 如 hp
-
-        List<Card> cards = ResolveCardList(cardName, card, triggerData);
-        if (cards == null || cards.Count == 0)
+        // 两个 class.varible
+        // 三个 class.List.特殊判断
+        // TODO 先处理有两个的情况
+        if (parts.Length == 2)
         {
-            Debug.LogWarning($"未解析到目标卡牌：{cardName}");
-            return "";
+            string className = parts[0].Trim().ToLower();   // 如 attacker
+            string fieldName = parts[1].Trim();            // 如 hp
+            
+            IClassResolver classResolver = ResolveClass(className,card,triggerData);
+            if (classResolver == null) return null;
+            // TODO 注意：在3个以前没必要进行特殊处理，可统一通过找变量返回string
+            string value = GetCardFieldValue(classResolver, fieldName);
+            if (value == null) return null;
+            return value;
         }
-
-        return GetCardFieldValue(cards[0], fieldName);
+        
+        // TODO 有三个的情况
+        return null;
+        // return GetCardFieldValue(cards[0], fieldName);
     }
     //获取对象，比如，将self识别为自身，并且返回对象的Card
-    private static List<Card> ResolveCardList(string keyword, Card card, TriggerData triggerData)
+    private static IClassResolver ResolveClass(string classType, Card card, TriggerData triggerData)
     {
-        switch (keyword)
+        IClassResolver result = null;
+        
+        if (Enum.TryParse("attack", ignoreCase: true, out ClassEnum type))
         {
-            case "self":
-                return new List<Card> { card };
+            Debug.Log($"转换成功: {type}");
+        }
+        else
+        {
+            Debug.LogWarning("转换失败");
+            return null;
+        }
+        
+        switch (type)
+        {
+            case ClassEnum.CurrentPlayer:
+                result = BattleSystem.instance.currentPlayer;
+                break;
 
-            case "attacker":
-                return triggerData.Source != null ? new List<Card> { triggerData.Source } : new List<Card>();
+            case ClassEnum.Me:
+                result = BattleSystem.instance.GetPlayer(card.playerID,true);
+                break;
 
-            case "defender":
-                return (triggerData.MutiTarget != null && triggerData.MutiTarget.Count > 0)
-                    ? new List<Card> { triggerData.MutiTarget[0] }
-                    : new List<Card>();
+            case ClassEnum.Op:
+                result = BattleSystem.instance.GetPlayer(card.playerID,false);
+                break;
 
-            case "target":
-                return triggerData.MutiTarget ?? new List<Card>();
+            case ClassEnum.Self:
+                result = card;
+                break;
+            
+            case ClassEnum.Defender:
+                if (triggerData.MutiTarget != null && triggerData.MutiTarget.Count > 0)
+                    result = triggerData.MutiTarget[0];
+                break;
+
+            case ClassEnum.Attacker:
+                result = triggerData.Source;
+                break;
+            // case ClassEnum.Target:
+            //     result = triggerData.MutiTarget;
+            //     break;
+
+
 
             default:
-                return null;
+                Debug.LogWarning($"未处理的 ClassEnum: {classType}");
+                break;
         }
+
+
+
+        return null;
     }
     //获取对象属性，比如，将self.atk识别为自身卡牌的攻击力
-    private static string GetCardFieldValue(Card card, string field)
+    private static string GetCardFieldValue(IClassResolver classResolver, string field)
     {
-        if (card == null || string.IsNullOrEmpty(field))
+        if (classResolver == null || string.IsNullOrEmpty(field))
             return "";
-
+        
         // 先找属性
-        var prop = card.GetType().GetProperty(field, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+        var prop = classResolver.GetType().GetProperty(field, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
         if (prop != null)
         {
-            var value = prop.GetValue(card);
+            var value = prop.GetValue(classResolver);
             return value?.ToString() ?? "";
         }
 
         // 再找字段
-        var fieldInfo = card.GetType().GetField(field, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+        var fieldInfo = classResolver.GetType().GetField(field, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
         if (fieldInfo != null)
         {
-            var value = fieldInfo.GetValue(card);
+            var value = fieldInfo.GetValue(classResolver);
             return value?.ToString() ?? "";
         }
 

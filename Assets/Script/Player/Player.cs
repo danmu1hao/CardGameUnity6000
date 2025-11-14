@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Player:ITargetable
+public class Player:IClassResolver
 {
     public int playerId;
 
@@ -53,4 +53,9 @@ public class Player:ITargetable
 
     }
 
+    public string TryResolveCard(string resolveContent)
+    {
+        Debug.Log(resolveContent);
+        return null;
+    }
 }

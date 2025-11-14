@@ -4,37 +4,63 @@ using UnityEngine;
 
 public class Target
 {
-    /*public Target(string[] target,CardEffect effect)
-    {
-        this.effect = effect;
-        this.target = target;
-    }
-
-    CardEffect effect;
-    string[] target;*/
+    public CardEffect cardEffect;
+    public List<string> targetStringList;
     
     //目前构想 select_count or self,player...
-    public static List<ITargetable> FindTarget(string keyword, Card card, TriggerData triggerData)
+    public  List<Card> targetCards = new List<Card>();
+    public Player targetPlayer;
+    
+    public Target(CardEffect cardEffect,List<string> targetStringList)
     {
-        Debug.Log($"[FindTarget] 收到目标字符串：{keyword}");
+        this.cardEffect = cardEffect;
+        this.targetStringList = targetStringList;
+    }
 
-        string[] targetList = keyword.Split('=');
-        if (targetList.Length < 2)
+    public List<Card> GetValidTargets()
+    {
+        Debug.Log($"开始查找效果目标");
+
+        List<Card> allCards = BattleSystem.instance.allCardsInBattle;
+        
+        foreach (var targetCondition in targetStringList)
         {
-            Debug.LogError($"[FindTarget] 目标格式错误：{keyword}");
-            return new List<ITargetable>();
+            var result = ResolveTargetList(targetCondition, cardEffect.card, cardEffect.triggerData);
         }
+        
+
 
         string targetKeyword = targetList[1];
         Debug.Log($"[FindTarget] 解析目标字段为：{targetKeyword}");
 
-        var result = ResolveTargetList(targetKeyword, card, triggerData);
+        
 
         Debug.Log($"[FindTarget] 成功解析目标，返回 {result?.Count ?? 0} 个对象");
-        return result;
+
     }
+    
+    // public void FindTarget(string keyword, Card card, TriggerData triggerData)
+    // {
+    //     Debug.Log($"[FindTarget] 收到目标字符串：{keyword}");
+    //
+    //     string[] targetList = keyword.Split('=');
+    //     if (targetList.Length < 2)
+    //     {
+    //         Debug.LogError($"[FindTarget] 目标格式错误：{keyword}");
+    //
+    //     }
+    //
+    //     string targetKeyword = targetList[1];
+    //     Debug.Log($"[FindTarget] 解析目标字段为：{targetKeyword}");
+    //
+    //     var result = ResolveTargetList(targetKeyword, card, triggerData);
+    //
+    //     Debug.Log($"[FindTarget] 成功解析目标，返回 {result?.Count ?? 0} 个对象");
+    //
+    // }
 
     //赋值操作，这里暂且再来一次
+
     private static List<ITargetable> ResolveTargetList(string keyword, Card card, TriggerData triggerData)
     {
         switch (keyword)

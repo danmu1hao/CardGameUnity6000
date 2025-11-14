@@ -4,10 +4,35 @@ using UnityEngine;
 
 public abstract class AtomicEffect
 {
+    #region  effectOrigin
+    public int AtomicEffect_ID;
+    public string AtomicEffect_Name;
+    public string AtomicEffect_Text;
+    public string AtomicEffect_Detail;
+    
+    public string AtomicEffect_Timing;
+    public string AtomicEffect_Extra_Info;
+    
+
+    #endregion
+    public Target target;
     public CardEffect cardEffect;
+    public List<Card> targetCards => target.targetCards;
+    public Player targetPlayer => target.targetPlayer;
     int effectNum;  
     public List<Card> targetCardList=new List<Card>();
-    // 
+
+    public AtomicEffect(List<EffectConfig> effectConfigList, Card card)
+    {
+        
+    }
+
+
+    public void FindTarget()
+    {
+        target.GetValidTargets();
+    }
+
     public virtual void EffectExecute()
     {
         if (cardEffect == null)

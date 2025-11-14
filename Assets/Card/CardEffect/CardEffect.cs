@@ -4,12 +4,15 @@ using UnityEngine;
 
 public class CardEffect
 {
+    //用于记录触发器信息，比如攻击者是谁，这里采用依赖注入，每次进入效果必然传入
+    public TriggerData triggerData;
+    
     public int playerID => this.card.playerID;
     
-    public EffectConfig effectConfig;
+
     public Card card; // 拥有这个效果的卡牌
 
-    #region MyRegion
+    #region varible
     
 
     public string effectDetail => effectConfig.effectDetail;
@@ -19,50 +22,55 @@ public class CardEffect
 
     #endregion
 
-    public Card effectTarget;
+    /// <summary>
+    /// 一个效果管多个原子效果
+    /// </summary>
+    public List<EffectConfig> effectConfigList;
     public AtomicEffect AtomicEffect;
+    public Timing timing;
     public Condition condition;
     public Target target;
-
-    public Timing timing;
 
 
     /// <summary>
     /// 前置效果代价支付 好麻烦。 如果确认发动则继续执行
     /// </summary>
     public List<AtomicEffect> preEffectList = new List<AtomicEffect>();
-    public  List<ITargetable> effectTargetList = new List<ITargetable>();
 
     /// <summary>
     /// 原子执行效果，只负责效果执行
     /// </summary>
     public List<AtomicEffect> subEffectList = new List<AtomicEffect>();
     
-    public CardEffect(EffectConfig effectConfig,Card card)
+    public CardEffect(List<EffectConfig> effectConfigList,Card card)
     {
-        this.effectConfig = effectConfig;
-        
-        this.effectTarget = new Card();
-        
-        this.AtomicEffect = ReflactionSystem.FindClassByName<AtomicEffect>(effectConfig.effect);
-        if (AtomicEffect == null)
+        this.effectConfigList = effectConfigList;
+
+        foreach (var effectConfig in effectConfigList)
         {
-            AtomicEffect = new NoneType();
-            Debug.Log("nonetype");
+
+            this.AtomicEffect = ReflactionSystem.FindClassByName<AtomicEffect>(effectConfig.effect);
+            if (AtomicEffect == null)
+            {
+                AtomicEffect = new NoneType();
+                Debug.Log("nonetype");
+            }
+            this.AtomicEffect.cardEffect=this;
+            
+            //TODO
+            this.timing = new Timing();
+            
+            this.condition = new Condition(SplitStr(effectConfig.condition),this); 
+            //TODO
+            this.target = new Target();
+
+
+            this.card = card;
+            
+            timing.LoadTiming(this.effectConfig.timing);
+            Debug.Log(card.name+effectConfig.timing);
         }
-        this.AtomicEffect.cardEffect=this;
-        
-        this.condition = new Condition(SplitStr(effectConfig.condition),this); 
-        //TODO
-        this.target = new Target();
 
-        //TODO
-        this.timing = new Timing();
-
-        this.card = card;
-        
-        timing.LoadTiming(this.effectConfig.timing);
-        Debug.Log(card.name+effectConfig.timing);
     }
 
 
@@ -70,52 +78,54 @@ public class CardEffect
     {
         return str.Split("&&");
     }
-    //用于记录触发器信息，比如攻击者是谁
-    public TriggerData triggerData;
-    //检查条件是否满足，如果满足则执行    
-    public bool CheckConditionAndCost(TriggerData triggerData)
-    {
-        //记录一下
-        this.triggerData = triggerData;
-        
-        // 检查条件是否满足
-        foreach (var conditionStr in condition.conditionList)
-        {
-            Debug.Log(conditionStr);
-            //所有条件必须全部满足
-            if (!FieldResolver.Resolver(conditionStr,this.card,triggerData))
-            {
-                
-                return false;
-            }
-        }
-        //检查是否有支付cost的条件
 
+    //检查条件是否满足，如果满足则执行    
+    // public bool CheckConditionAndCost(TriggerData triggerData)
+    // {
+    //     //记录一下
+    //
+    // }
+    //
+
+    // TODO CardEffect实现
+    public bool CanCardEffectAcitve()
+    {
         return true;
     }
 
 
-
-
-    void CheckTarget()
+    public async Task<bool> CardEffectAcitvePre()
     {
+        // 记住 效果发动是需要询问的
+        foreach (var atomicEffect in preEffectList)
+        {
+            await atomicEffect.ExecuteAsync();
+        }
+    }
+
+    /// <summary>
+    /// TODO 出示确认
+    /// </summary>
+    async Task<bool> CardEffectAcitvePre_ENSURE()
+    {
+        await Time.time(1);
         
     }
     
-    public async Task Start()
+    public async Task CardEffectAcitve()
     {
         // PayCost();
         // Debug.Log("代价支付完毕");
         await ExecuteAsync();
     }
-     async Task ExecuteAsync()
-    {
-        Debug.Log($"[Effect] 执行：{effectConfig.effectText}");
-
-        List<ITargetable> targetList=Target.FindTarget(effectConfig.target, card, triggerData);
-        
-        AtomicEffect.EffectExecute();        
-
-        await Task.Delay(500); // 动画等待时间
-    }
+    //  async Task ExecuteAsync()
+    // {
+    //     Debug.Log($"[Effect] 执行：{effectConfig.effectText}");
+    //
+    //     List<ITargetable> targetList=Target.FindTarget(effectConfig.target, card, triggerData);
+    //     
+    //     AtomicEffect.EffectExecute();        
+    //
+    //     await Task.Delay(500); // 动画等待时间
+    // }
 }
