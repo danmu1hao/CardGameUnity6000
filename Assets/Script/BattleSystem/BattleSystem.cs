@@ -111,7 +111,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
             TriggerData triggerData = new TriggerData(attker, enemy);
 
             // 等待效果执行完成
-            await EffectSystem.instance.TimingTrigger(CardEnums.TimingList.when_attack, triggerData);
+            await EffectSystem.instance.TimingTrigger(CardEnums.TimingEnum.when_attack, triggerData);
 
             // 效果全部处理完之后再继续战斗
             BattleConfirmTwo(attker, enemy);
@@ -127,7 +127,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
                 TriggerData triggerData = new TriggerData(attker, new List<Card> { defender });
 
                 // 等待效果执行完成
-                await EffectSystem.instance.TimingTrigger(CardEnums.TimingList.when_attack, triggerData);
+                await EffectSystem.instance.TimingTrigger(CardEnums.TimingEnum.when_attack, triggerData);
 
                 // 效果全部处理完之后再继续战斗
                 BattleConfirmTwo(attker, defender);
@@ -249,7 +249,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
     public  void UseCard(Player player, Card card,GameObject field=null)
     {
         ExecuteSummonCost(card);
-        if (card.CardType==CardEnums.CardType.Monster)
+        if (card.CardTypeEnum==CardEnums.CardTypeEnum.Monster)
         {
             SummonCard(card,field);
         }
@@ -409,7 +409,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
         }
 
         TriggerData triggerData = new TriggerData(currentPlayer);
-        EffectSystem.instance.TimingTrigger(CardEnums.TimingList.when_turn_start,triggerData);
+        EffectSystem.instance.TimingTrigger(CardEnums.TimingEnum.when_turn_start,triggerData);
     }
     public void EndTurn()
     {

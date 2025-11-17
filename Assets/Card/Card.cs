@@ -16,7 +16,7 @@ public class Card :IClassResolver
     public int playerID => player.playerId;
 
     public CardConfig CardConfig;
-    public List<EffectConfig> EffectConfig;
+    public List<CardEffectConfig> EffectConfig;
     
     public int id;
     public string name;
@@ -31,11 +31,11 @@ public class Card :IClassResolver
     public List<Card> soulTargets = new List<Card>();
     public List<Card> sacrificeTargets=new List<Card>();
     
-    public CardEnums.CardType CardType
+    public CardEnums.CardTypeEnum CardTypeEnum
     {
         get
         {
-            if (Enum.TryParse<CardEnums.CardType>(CardConfig.type, out var result))
+            if (Enum.TryParse<CardEnums.CardTypeEnum>(CardConfig.type, out var result))
                 return result;
             else
                 throw new Exception($"无效的 CardType: {CardConfig.type}");
@@ -64,13 +64,17 @@ public class Card :IClassResolver
         }
 
         
-        // TODO 效果字符串处理 格式为 卡牌ID4位 效果1位 子效果1位
-        List<EffectConfig> effectConfigList = GameManager.instance.effectConfigDict[id];
-        foreach (var effectConfig in effectConfigList)
+        // TODO 之后再确认一下，这里给卡牌添加效果
+        // 卡牌获取自己所有的卡牌效果id
+        List<int> effectConfigIDList = GameManager.instance.cardIDEffectConfigDict[id];
+        foreach (int cardeffectID in effectConfigIDList)
         {
-            CardEffect cardEffect = new CardEffect(effectConfig,this);
+            CardEffectConfig effectConfigList = GameManager.instance.effectIDEffectConfigDict[cardeffectID];
+            CardEffect cardEffect = new CardEffect(effectConfigList,this);
             cardEffectList.Add(cardEffect);
         }
+        
+
         
     }
 

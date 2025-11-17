@@ -22,11 +22,11 @@ public class Condition
     {
         
         // 检查条件是否满足
-        foreach (var conditionStr in condition.conditionList)
+        foreach (var conditionStr in conditionList)
         {
-            Debug.Log(conditionStr);
+            LogCenter.Log(conditionStr);
             //所有条件必须全部满足
-            if (!FieldResolver.Resolver(conditionStr,this.card,cardEffect.triggerData))
+            if (!FieldResolver.Resolver(conditionStr,cardEffect.card,cardEffect.triggerData))
             {
                 
                 return false;
@@ -35,7 +35,6 @@ public class Condition
         //检查是否有支付cost的条件
     
         return true;
-        return true;
     }
     /// <summary>
     /// 很麻烦。。我们居然要同时确认代价对象，效果对象是否存在
@@ -43,7 +42,7 @@ public class Condition
     /// <returns></returns>
     bool CheckTargetExist()
     {
-        
+        // 去所有的原子效果找
         return true;
     }
 

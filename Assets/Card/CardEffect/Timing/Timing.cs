@@ -5,7 +5,7 @@ public class Timing
 {
 
 
-    public CardEnums.TimingList timingEnum;
+    public CardEnums.TimingEnum timingEnum;
 
     public bool LoadTiming(string timingText)
     {

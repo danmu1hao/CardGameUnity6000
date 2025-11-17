@@ -1,57 +1,77 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
-
+using ExtraInfoEnum=CardEnums.ExtraInfoEnum;
 public abstract class AtomicEffect
 {
     #region  effectOrigin
-    public int AtomicEffect_ID;
-    public string AtomicEffect_Name;
-    public string AtomicEffect_Text;
-    public string AtomicEffect_Detail;
+    public AtomicEffectConfig AtomicEffectConfig;
+    public int AtomicEffect_ID => AtomicEffectConfig.effectID;
+    public string AtomicEffect_Name => AtomicEffectConfig.effectName;
+    public string AtomicEffect_Text => AtomicEffectConfig.internalDesc;
+    public string AtomicEffect_Detail => AtomicEffectConfig.effectDetail;
     
-    public string AtomicEffect_Timing;
-    public string AtomicEffect_Extra_Info;
-    
+    public string AtomicEffect_Duration => AtomicEffectConfig.effectDuration;
 
     #endregion
+    public List<ExtraInfoEnum> AtomicEffect_Extra_Info;
+
     public Target target;
     public CardEffect cardEffect;
+    
     public List<Card> targetCards => target.targetCards;
     public Player targetPlayer => target.targetPlayer;
+    
     int effectNum;  
     public List<Card> targetCardList=new List<Card>();
 
-    public AtomicEffect(List<EffectConfig> effectConfigList, Card card)
+
+
+    public AtomicEffect(AtomicEffectConfig atomicEffectConfig, CardEffect cardEffect)
     {
+        this.cardEffect = cardEffect;
+        this.AtomicEffectConfig = atomicEffectConfig;
+        string[] extraSplit =
+            atomicEffectConfig.extra.Split("&&");
+        foreach (var extraStr in extraSplit)
+        {
+            this.AtomicEffect_Extra_Info.Add(CardEnums.TryGetEnum<ExtraInfoEnum>(extraStr));
+        }
         
     }
 
 
-    public void FindTarget()
+    async Task<bool> FindTarget()
     {
-        target.GetValidTargets();
+        return await target.GetValidTargets();
     }
 
-    public virtual void EffectExecute()
+    public virtual async Task<bool> ExecuteAsync()
     {
+        bool targetSuccess=
+        await FindTarget();
+        if(!targetSuccess)return false;
+        
         if (cardEffect == null)
         {
             Debug.LogError($"{GetType().Name}: cardEffect 为空");
-            return;
+            return false;
         }
 
         if (cardEffect.card == null)
         {
             Debug.LogError($"{GetType().Name}: cardEffect.card 为空");
-            return;
+            return false;
         }
 
         if (cardEffect.card.name == null)
         {
             Debug.LogError($"{GetType().Name}: cardEffect.card.name 为空");
-            return;
+            return false;
         }
+
         
         Debug.Log($"执行效果 {GetType().Name}");
 
@@ -63,6 +83,7 @@ public abstract class AtomicEffect
                 targetCardList.Add(card);
             }
         }*/
+        return true;
         
     }
 }

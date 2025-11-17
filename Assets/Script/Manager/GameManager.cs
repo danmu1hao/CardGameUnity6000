@@ -10,9 +10,20 @@ public class GameManager : QuickInstance<GameManager>
 {
     [SerializeField]TextAsset playerDeck;
     TextAsset enemyDeck;
+    
+    /// <summary>
+    /// cardid->CardConfig 
+    /// </summary>
     public Dictionary<int, CardConfig> cardConfigDict = new Dictionary<int, CardConfig>();
-    public Dictionary<int, List<EffectConfig>> effectConfigDict = new Dictionary<int, List<EffectConfig>>();
-
+    
+    /// <summary>
+    /// cardid->自己的所有的effectID
+    /// </summary>
+    public Dictionary<int, List<int>> cardIDEffectConfigDict = new Dictionary<int, List<int>>();
+    /// <summary>
+    /// effectID->EffectConfig 卡牌id可以获取自己的多个Effect
+    /// </summary>
+    public Dictionary<int, CardEffectConfig> effectIDEffectConfigDict = new Dictionary<int,CardEffectConfig>();
     public void Start()
     {
         ReadCardData();
@@ -49,28 +60,57 @@ public class GameManager : QuickInstance<GameManager>
     public void ReadEffectData()
     {
         string textFile = effectcsvFile.text;
-        string[] effectData = textFile.Split('\n');
-
-        for (int i = 1; i < effectData.Length; i++) // 从第1行开始，跳过第0行
+        string[] effectDataList = textFile.Split('\n');
+        
+        // 处理单行 data
+        // 从第1行开始，跳过表头
+        for (int i = 1; i < effectDataList.Length; i++)
         {
-            string line = effectData[i];
-            if (string.IsNullOrWhiteSpace(line)) continue;
+            string line = effectDataList[i].Trim();
+            if (string.IsNullOrWhiteSpace(line))
+                continue;             
+            string[] effectData = line.Split(',');
+            if (effectData.Length == 0)
+                continue;
 
-            Debug.Log(line);
-            
-            EffectConfig effect = new EffectConfig(line);
-            if (!effectConfigDict.ContainsKey(effect.effectID))
+            string effectIDStr = effectData[0].Trim();
+            if (effectIDStr.Length < 9)
             {
-                effectConfigDict.Add(effect.effectID, new List<EffectConfig> { effect });
+                LogCenter.Warning($"EffectID 长度不足 9 位：{effectIDStr}（行:{line})");
+                continue;
             }
-            else
+
+            // 拆 EffectID：卡牌ID(0..7)、效果序号(8)、原子序号(9)
+            string cardIDStr = effectIDStr.Substring(0, 8); // 8 位卡牌ID
+            string effectIndexStr = effectIDStr.Substring(8, 1); // 第几个效果
+            int cardID = 0;
+            int effectGroupID = 0;
+            if(!int.TryParse(cardIDStr, out  cardID)
+               || !int.TryParse(effectIndexStr, out  effectGroupID))
+                LogCenter.Warning("读取效果数据失败");
+
+            // 1）填充 cardIDEffectConfigDict：卡牌ID -> 该卡所有效果ID
+            if (!cardIDEffectConfigDict.TryGetValue(cardID, out var effectIDList))
             {
-                effectConfigDict[effect.effectID].Add(effect);
+                effectIDList = new List<int>(){effectGroupID};
+                cardIDEffectConfigDict.Add(cardID, effectIDList);
+            }else cardIDEffectConfigDict[cardID].Add(effectGroupID);
+
+            if (!effectIDEffectConfigDict.TryGetValue(effectGroupID, out CardEffectConfig effectConfigList))
+            {
+                //如果还没有这个Config
+                if(effectGroupID.ToString().Length!=9) LogCenter.Warning("效果ID长度错误");
+                CardEffectConfig cardEffectConfig = new CardEffectConfig(line);
+                effectIDEffectConfigDict.Add(effectGroupID, cardEffectConfig);
+            }else
+            {
+                if(effectGroupID.ToString().Length!=10) LogCenter.Warning("原子ID长度错误");
+                effectIDEffectConfigDict[effectGroupID].AddAtomicEffectConfig(line);
             }
-
-
         }
+        
     }
+
     /*
     Debug.Log(cardConfigDict.Count);
     foreach (var VARIABLE in cardConfigDict)

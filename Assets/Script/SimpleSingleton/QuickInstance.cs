@@ -6,7 +6,15 @@ public class QuickInstance<T> : MonoBehaviour where T : MonoBehaviour
 
     protected virtual void Awake()
     {
-        instance = this as T;
-
+        if (instance == null)
+        {
+            instance = this as T;
+            // 若希望在场景切换时保留单例，取消下行注释：
+            // DontDestroyOnLoad(gameObject);
+        }
+        else if (instance != this)
+        {
+            Destroy(gameObject);
+        }
     }
 }

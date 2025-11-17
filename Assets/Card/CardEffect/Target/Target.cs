@@ -1,26 +1,42 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class Target
 {
-    public CardEffect cardEffect;
+    public AtomicEffect atomicEffect;
     public List<string> targetStringList;
     
     //目前构想 select_count or self,player...
     public  List<Card> targetCards = new List<Card>();
     public Player targetPlayer;
     
-    public Target(CardEffect cardEffect,List<string> targetStringList)
+    public Target(AtomicEffect atomicEffect,List<string> targetStringList)
     {
-        this.cardEffect = cardEffect;
+        this.atomicEffect = atomicEffect;
         this.targetStringList = targetStringList;
     }
 
-    public List<Card> GetValidTargets()
+    /// <summary>
+    /// 有两种选对象方式，赋值，限定
+    /// </summary>
+    /// <returns></returns>
+    public async Task<bool> GetValidTargets()
     {
+        List<Card> targets = new List<Card>();
         Debug.Log($"开始查找效果目标");
 
+        // 情况1 选对象 通过额外信息的select_count=1判断
+        foreach (var infoEnum in atomicEffect.AtomicEffect_Extra_Info)
+        {
+            if (infoEnum==CardEnums.ExtraInfoEnum.Select)
+            {
+                // 要选择对象
+            }
+        }
+        
+        
         List<Card> allCards = BattleSystem.instance.allCardsInBattle;
         
         foreach (var targetCondition in targetStringList)
@@ -36,7 +52,7 @@ public class Target
         
 
         Debug.Log($"[FindTarget] 成功解析目标，返回 {result?.Count ?? 0} 个对象");
-
+        return targets;
     }
     
     // public void FindTarget(string keyword, Card card, TriggerData triggerData)
@@ -61,7 +77,21 @@ public class Target
 
     //赋值操作，这里暂且再来一次
 
-    private static List<ITargetable> ResolveTargetList(string keyword, Card card, TriggerData triggerData)
+    public void CheckValidTargets()
+    {
+        List<Card> targets = new List<Card>();
+        Debug.Log($"开始确认是否存在效果目标");
+
+        List<Card> allCards = BattleSystem.instance.allCardsInBattle;
+
+    }
+    
+    public bool CheckTarget(Card card)
+    {
+        return targetCards.Contains(card);
+    }
+    
+    private static void ResolveTargetList(string keyword, Card card, TriggerData triggerData)
     {
         switch (keyword)
         {
@@ -86,4 +116,5 @@ public class Target
         }
     }
 
+    
 }

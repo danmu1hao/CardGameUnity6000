@@ -3,24 +3,57 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using TimingEnum=CardEnums.TimingEnum;
 
 public class EffectSystem : QuickInstance<EffectSystem>
 {
     public static EffectSystem instance;
     // Start is called before the first frame update
-    void Start()
-    {
-        instance = this;
-    }
-
+    
     public GameObject EffectPanelUI;
 
+    #region TimingEffectDict
+    
+    public static Dictionary<TimingEnum,List<CardEffect>> timingEffectTriggerDict=
+        new Dictionary<TimingEnum,List<CardEffect>>();
     /// <summary>
-    /// 唯一对外界暴露的方法，第一启动点
+    /// 注册一个反应函数，根据 TimingEnum 归类存储
     /// </summary>
-    /// <param name="timing"></param>
-    /// <param name="triggerData"></param>
-    public async Task TimingTrigger(CardEnums.TimingList timing, TriggerData triggerData)
+    public static void SubscribeReaction(TimingEnum timingEnum, CardEffect cardEffect)
+    {
+        // 如果没有这个 key，先创建一个空的 List
+        if (!timingEffectTriggerDict.TryGetValue(timingEnum, out var list))
+        {
+            list = new List<CardEffect>();
+            timingEffectTriggerDict[timingEnum] = list;
+        }
+
+        // 避免重复添加
+        if (!list.Contains(cardEffect)){
+            LogCenter.Warning("重复添加了效果");
+            list.Add(cardEffect);}
+    }
+    /// <summary>
+    /// 取消注册
+    /// </summary>
+    public static void UnsubscribeReaction(TimingEnum timingEnum, CardEffect cardEffect)
+    {
+        if (timingEffectTriggerDict.TryGetValue(timingEnum, out var list))
+        {
+            list.Remove(cardEffect);
+        
+            // 如果列表空了，可以选择移除 key（可选）
+            if (list.Count == 0)
+                timingEffectTriggerDict.Remove(timingEnum);
+        }
+    }
+
+    #endregion
+ 
+    /// <summary>
+    /// 唯一对外界暴露的方法，第一启动点，启动以后自己转
+    /// </summary>
+    public async Task TimingTrigger(CardEnums.TimingEnum timing, TriggerData triggerData)
     {
         Debug.Log("时点触发 "+timing.ToString());
         await PlayerAcitveEffects(timing, triggerData);
@@ -28,13 +61,13 @@ public class EffectSystem : QuickInstance<EffectSystem>
     }
     
     // 处理玩家是否发动卡牌
-    async Task PlayerAcitveEffects(CardEnums.TimingList timing, TriggerData triggerData)
+    async Task PlayerAcitveEffects(CardEnums.TimingEnum timing, TriggerData triggerData)
     {
         // 注意，每个时点都是一个完整stack链条
         // 刷新
         _temp_chainStack = new Stack<CardEffect>();
         // 把所有的能发动效果的卡给我
-        List<CardEffect> cardEffects=CheckEffectWithTiming(timing,triggerData);
+        List<CardEffect> cardEffects=GetCanActiveCardEffect(timing,triggerData);
         List<CardEffect> playerEffects,enemyEffects=new List<CardEffect>();
         // 分离出玩家和敌人的效果
         playerEffects = cardEffects.Where(x => x.card.player == BattleSystem.instance.currentPlayer).ToList();
@@ -63,13 +96,13 @@ public class EffectSystem : QuickInstance<EffectSystem>
             Debug.Log("等待选择效果");
             CardEffect selectEffect= await UIManager.instance.OpenSelectPanel(cardEffect_temp);
             await Task.Delay(50); // 等待 0.1 秒
-            Debug.Log("选择效果返回 "+(selectEffect!=null?selectEffect.effectConfig.effectText:"空"));
+            Debug.Log("选择效果返回 "+(selectEffect!=null?selectEffect.cardEffectConfig.effectText:"空"));
             if (selectEffect!=null)
             {
                 //之后加
                 PayCost(selectEffect);
                 // TODO 我需要移除那个选择的对象
-                Debug.Log("选择了效果 "+selectEffect.effectConfig.effectText);
+                Debug.Log("选择了效果 "+selectEffect.cardEffectConfig.effectText);
                 cards.Remove(selectEffect.card);
                 _temp_chainStack.Push(selectEffect);
             }
@@ -124,71 +157,46 @@ public class EffectSystem : QuickInstance<EffectSystem>
 
     #region  check
     
-    async Task CardPayCost(CardEffect effect, TriggerData triggerData)
+    List<CardEffect> GetCanActiveCardEffect(TimingEnum timing, TriggerData triggerData)
     {
-        // 这里写支付费用的逻辑
-        return ;
+        
+        List<CardEffect> effectList =timingEffectTriggerDict[timing];
+        
+        List<CardEffect> canEffectList=new List<CardEffect>();
+        foreach (var effect in effectList)
+        {
+            //不满足条件
+            if(CheckSingleEffect(effect,triggerData))canEffectList.Add(effect);
+        }
+        return canEffectList;
     }
     
-   List<CardEffect> CheckEffectWithTiming(CardEnums.TimingList timing,TriggerData triggerData)
-    {
-        List<CardEffect> effectList = new List<CardEffect>();
-        
-        foreach (var card in BattleSystem.instance.Player1.AllCards.Concat(BattleSystem.instance.Player2.AllCards))
-        {
-            foreach (var effect in card.cardEffectList)
-            {
-                if (CheckSingleEffect(effect, triggerData, timing))
-                {
-                    Debug.Log("检测到可发动卡牌 " + card.name);
-                    effectList.Add(effect);
-                }
-            }
-        }
 
-        Debug.Log(timing.ToString()+"时点检测完毕"+effectList.Count);
-        
-        for (int i = effectList.Count - 1; i >= 0; i--)
-        {
-            var effect = effectList[i];
-            if (!effect.CheckConditionAndCost(triggerData))
-            {
-                effectList.RemoveAt(i);
-            }
-        }
 
-        return effectList;
-    }
-
-    bool CheckSingleEffect(CardEffect effect, TriggerData triggerData, CardEnums.TimingList timing)
+    bool CheckSingleEffect(CardEffect effect, TriggerData triggerData)
     {
         if (effect.AtomicEffect is NoneType)
         {
             return false;
         }
-        // 1. 时点检测
-        if (!CheckTiming(effect, timing)) return false;
-
+        // 1.传入当前发生事件
+        effect.triggerData = triggerData;
         // 2. 条件检测
-        if (!CheckCondition(effect, triggerData)) return false;
+        if (!CheckCondition(effect)) return false;
 
         // 3. 支付费用检测
-        if (!CheckCost(effect, triggerData)) return false;
+        if (!CheckCost(effect)) return false;
 
         return true;
     }
 
-    bool CheckTiming(CardEffect effect, CardEnums.TimingList timing)
-    {
-        return effect.timing.timingEnum == timing;
-    }
 
-    bool CheckCondition(CardEffect effect, TriggerData triggerData)
+    bool CheckCondition(CardEffect effect)
     {
-        return effect.CheckConditionAndCost(triggerData); // 你原本的方法
+        return effect.condition.CheckConditionAndTarget(); // 你原本的方法
     }
     
-    bool CheckCost(CardEffect effect, TriggerData triggerData)
+    bool CheckCost(CardEffect effect)
     {
         
         return true;
@@ -229,17 +237,49 @@ public class EffectSystem : QuickInstance<EffectSystem>
 
         await ShowEffectAnimation(cardEffect);
 
-        await cardEffect.Start();
+        // await cardEffect.Start();
 
     }
 
     private async Task ShowEffectAnimation(CardEffect cardEffect)
     {
-        Debug.Log($"[EffectSystem] 播放效果动画：{cardEffect.effectConfig.effectText}（卡：{cardEffect.card.name}）");
+        Debug.Log($"[EffectSystem] 播放效果动画：{cardEffect.cardEffectConfig.effectText}（卡：{cardEffect.card.name}）");
         await Task.Delay(1000); // 模拟动画等待
     }
     
     #endregion
     
+    #region OldCheck
+    
+    // List<CardEffect> CheckEffectWithTiming(CardEnums.TimingEnum timing,TriggerData triggerData)
+    //  {
+    //      List<CardEffect> effectList = new List<CardEffect>();
+    //      
+    //      foreach (var card in BattleSystem.instance.Player1.AllCards.Concat(BattleSystem.instance.Player2.AllCards))
+    //      {
+    //          foreach (var effect in card.cardEffectList)
+    //          {
+    //              if (CheckSingleEffect(effect, triggerData, timing))
+    //              {
+    //                  Debug.Log("检测到可发动卡牌 " + card.name);
+    //                  effectList.Add(effect);
+    //              }
+    //          }
+    //      }
+    //
+    //      Debug.Log(timing.ToString()+"时点检测完毕"+effectList.Count);
+    //      
+    //      for (int i = effectList.Count - 1; i >= 0; i--)
+    //      {
+    //          var effect = effectList[i];
+    //          if (!effect.CheckConditionAndCost(triggerData))
+    //          {
+    //              effectList.RemoveAt(i);
+    //          }
+    //      }
+    //
+    //      return effectList;
+    //  }
+    #endregion
 
 }

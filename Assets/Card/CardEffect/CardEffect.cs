@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using CardTypeEnum = CardEnums.CardTypeEnum;
 
 public class CardEffect
 {
@@ -13,25 +14,26 @@ public class CardEffect
     public Card card; // 拥有这个效果的卡牌
 
     #region varible
+    public int effectID => cardEffectConfig.effectID;
+    public string effectName => cardEffectConfig.effectName;
+    public string effectText => cardEffectConfig.effectText;
+    public CardTypeEnum CardTypeEnum; 
+    public string cardStyle => cardEffectConfig.cardStyle;
     
-
-    public string effectDetail => effectConfig.effectDetail;
-    public string effectDuration => effectConfig.effectDuration;
-    public string extra => effectConfig.extra;
-    public string effectText => effectConfig.effectText;
-
+    
     #endregion
 
     /// <summary>
     /// 一个效果管多个原子效果
     /// </summary>
-    public List<EffectConfig> effectConfigList;
-    public AtomicEffect AtomicEffect;
-    public Timing timing;
-    public Condition condition;
-    public Target target;
+    public CardEffectConfig cardEffectConfig;
+    public readonly  AtomicEffect AtomicEffect;
+    public readonly  Timing timing;
+    public readonly  Condition condition;
 
-
+    // 需要频繁更新
+    public bool CanActive ;
+    
     /// <summary>
     /// 前置效果代价支付 好麻烦。 如果确认发动则继续执行
     /// </summary>
@@ -42,58 +44,52 @@ public class CardEffect
     /// </summary>
     public List<AtomicEffect> subEffectList = new List<AtomicEffect>();
     
-    public CardEffect(List<EffectConfig> effectConfigList,Card card)
+    public CardEffect(CardEffectConfig cardEffectConfig,Card card)
     {
-        this.effectConfigList = effectConfigList;
-
-        foreach (var effectConfig in effectConfigList)
+        this.card = card;
+        this.cardEffectConfig = cardEffectConfig;
+        
+        foreach (var atomicEffectConfig in cardEffectConfig.atomicEffectConfigList)
         {
-
-            this.AtomicEffect = ReflactionSystem.FindClassByName<AtomicEffect>(effectConfig.effect);
+            this.AtomicEffect = ReflactionSystem.FindClassByName<AtomicEffect>(atomicEffectConfig.effect);
             if (AtomicEffect == null)
             {
                 AtomicEffect = new NoneType();
                 Debug.Log("nonetype");
             }
             this.AtomicEffect.cardEffect=this;
-            
-            //TODO
-            this.timing = new Timing();
-            
-            this.condition = new Condition(SplitStr(effectConfig.condition),this); 
-            //TODO
-            this.target = new Target();
-
-
-            this.card = card;
-            
-            timing.LoadTiming(this.effectConfig.timing);
-            Debug.Log(card.name+effectConfig.timing);
         }
 
+            
+        //TODO
+        this.timing = new Timing();
+            
+        this.condition = new Condition(SplitAndStr(cardEffectConfig.condition),this); 
+
+
+
+        this.card = card;
+            
+        timing.LoadTiming(this.cardEffectConfig.timing);
+        Debug.Log(card.name+cardEffectConfig.timing);
     }
 
 
-    public string[] SplitStr(string str)
+    public string[] SplitAndStr(string str)
     {
         return str.Split("&&");
     }
 
-    //检查条件是否满足，如果满足则执行    
-    // public bool CheckConditionAndCost(TriggerData triggerData)
-    // {
-    //     //记录一下
-    //
-    // }
-    //
-
-    // TODO CardEffect实现
-    public bool CanCardEffectAcitve()
+    public async Task ActiveCardEffect()
     {
-        return true;
+       
     }
 
+    #region PreEffect
 
+    /// <summary>
+    /// TODO 出示确认
+    /// </summary>
     public async Task<bool> CardEffectAcitvePre()
     {
         // 记住 效果发动是需要询问的
@@ -101,31 +97,28 @@ public class CardEffect
         {
             await atomicEffect.ExecuteAsync();
         }
-    }
-
-    /// <summary>
-    /// TODO 出示确认
-    /// </summary>
-    async Task<bool> CardEffectAcitvePre_ENSURE()
-    {
-        await Time.time(1);
         
     }
+
+    #endregion
+
+
+    #region Effect
+
     
-    public async Task CardEffectAcitve()
+
+    #endregion
+    
+
+
+
+
+
+
+    // TODO CardEffect实现
+    public bool CheckCardEffectAcitve()
     {
-        // PayCost();
-        // Debug.Log("代价支付完毕");
-        await ExecuteAsync();
+        return true;
     }
-    //  async Task ExecuteAsync()
-    // {
-    //     Debug.Log($"[Effect] 执行：{effectConfig.effectText}");
-    //
-    //     List<ITargetable> targetList=Target.FindTarget(effectConfig.target, card, triggerData);
-    //     
-    //     AtomicEffect.EffectExecute();        
-    //
-    //     await Task.Delay(500); // 动画等待时间
-    // }
+
 }
