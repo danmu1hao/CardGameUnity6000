@@ -27,6 +27,9 @@ public abstract class AtomicEffect
     int effectNum;  
     public List<Card> targetCardList=new List<Card>();
 
+    protected AtomicEffect()
+    {
+    }
 
 
     public AtomicEffect(AtomicEffectConfig atomicEffectConfig, CardEffect cardEffect)
@@ -48,7 +51,11 @@ public abstract class AtomicEffect
         return await target.GetValidTargets();
     }
 
-    public virtual async Task<bool> ExecuteAsync()
+    /// <summary>
+    /// 毕竟效果执行需要找对象，如果不选的话那还是算取消，但是如果支付代价又是必须执行
+    /// </summary>
+    /// <returns></returns>
+    public virtual async Task<bool> EffectExecute()
     {
         bool targetSuccess=
         await FindTarget();
