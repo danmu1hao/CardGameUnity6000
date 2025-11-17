@@ -80,24 +80,26 @@ public class CardEffect
         return str.Split("&&");
     }
 
-    public async Task ActiveCardEffect()
-    {
-       
-    }
 
-    #region PreEffect
+
+    #region EffectActive    
 
     /// <summary>
-    /// TODO 出示确认
+    /// TODO 效果发动
     /// </summary>
     public async Task<bool> CardEffectAcitvePre()
     {
-        // 记住 效果发动是需要询问的
+        // 记住 目前不确定如果pre需要连续选择好几次对象会咋样
         foreach (var atomicEffect in preEffectList)
         {
-            await atomicEffect.ExecuteAsync();
+            if (await atomicEffect.ExecuteAsync()==false) return false;
         }
-        
+
+        return true;
+    }
+    public async Task<bool> ActiveCardEffect()
+    {
+        return true;
     }
 
     #endregion
