@@ -1,18 +1,14 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
-public class draw_card: AtomicEffect
+public class draw_card : AtomicEffect
 {
-    public override void EffectExecute()
+    protected override async Task OnExecute()
     {
-        base.EffectExecute();
-        Debug.Log("抽卡效果触发");
-        //TODO 给对手抽卡？
 
+
+        Debug.Log("抽卡效果触发");
         Debug.Log($"cardEffect.card.name = {cardEffect.card.name}");
-        if (cardEffect.target!=null)
-        {
-            
-        }
         BattleSystem.instance.DrawCard(cardEffect.card.player);
     }
 }

@@ -1,11 +1,10 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class destory : AtomicEffect
 {
-    public override void EffectExecute()
+    protected override async Task OnExecute()
     {
-        base.EffectExecute();
-
         foreach (var card in targetCardList)
         {
             BattleSystem.instance.DestroyFieldCard(card);

@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 using UnityEngine;
+
 public class test : AtomicEffect
 {
-    public override void EffectExecute()
+    protected override async Task OnExecute()
     {
-        base.EffectExecute();
+
         Debug.Log("Test");
     }
-
 }
-

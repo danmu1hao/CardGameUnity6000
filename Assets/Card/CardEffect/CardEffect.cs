@@ -92,7 +92,7 @@ public class CardEffect
         // 记住 目前不确定如果pre需要连续选择好几次对象会咋样
         foreach (var atomicEffect in preEffectList)
         {
-            if (await atomicEffect.ExecuteAsync()==false) return false;
+            if (await atomicEffect.EffectExecute()==false) return false;
         }
 
         return true;

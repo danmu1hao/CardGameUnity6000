@@ -1,11 +1,10 @@
-﻿/*
-public class damage : Effect
-{
-    public override void EffectExecute()
-    {
-        base.EffectExecute();
-        
-    }
+﻿using System.Threading.Tasks;
 
+public class damage : AtomicEffect
+{
+    protected override async Task OnExecute()
+    {
+
+        // TODO: 实现伤害逻辑
+    }
 }
-*/

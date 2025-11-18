@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 
-public class cancel_Fight: AtomicEffect
+public class cancel_Fight : AtomicEffect
 {
-    public override void EffectExecute()
+    protected override async Task OnExecute()
     {
-        base.EffectExecute();
-        cardEffect.effectTarget.cancelFight = true;
+
+
+        // cardEffect.effectTarget.cancelFight = true;
     }
 }

@@ -55,7 +55,7 @@ public abstract class AtomicEffect
     /// 毕竟效果执行需要找对象，如果不选的话那还是算取消，但是如果支付代价又是必须执行
     /// </summary>
     /// <returns></returns>
-    public virtual async Task<bool> EffectExecute()
+    public async Task<bool> EffectExecute()
     {
         bool targetSuccess=
         await FindTarget();
@@ -81,16 +81,11 @@ public abstract class AtomicEffect
 
         
         Debug.Log($"执行效果 {GetType().Name}");
+        await OnExecute();
 
-        /*foreach (var itarget in cardEffect.effectTargetList)
-        {
-            Card card=itarget as Card;
-            if (card!=null)
-            {
-                targetCardList.Add(card);
-            }
-        }*/
         return true;
         
     }
+    // TODO 本方法还有待确认
+    protected abstract Task OnExecute();
 }
