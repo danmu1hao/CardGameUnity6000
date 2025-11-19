@@ -4,8 +4,6 @@ using System.Reflection;
 using Unity.VisualScripting;
 using UnityEngine;
 
-using ClassEnum = CardEnums.ClassEnum;
-
 public static class FieldResolver
 {
 
@@ -16,7 +14,7 @@ public static class FieldResolver
         var match = System.Text.RegularExpressions.Regex.Match(expression, @"(.+?)\s*(==|=|!=|>|<)\s*(.+)");
         if (!match.Success)
         {
-            UnityEngine.Debug.LogWarning($"无法解析表达式：{expression}");
+            LogCenter.LogWarning($"无法解析表达式：{expression}");
             return false;
         }
 
@@ -28,13 +26,13 @@ public static class FieldResolver
         // 使用你已有的方法提取左边变量的值
         string leftValue = GetVaribleData(leftRaw, card, triggerData);
         string rightValue = GetVaribleData(rightRaw, card, triggerData);
-        if(leftValue=="null"||rightValue=="null"){Debug.LogError("resolve fail");return false;}
+        if(leftValue=="null"||rightValue=="null"){ LogCenter.LogError("resolve fail");return false;}
         // ( leftValue op rightValue)
         // 重组为简单表达式字符串，如 "5 > 3"
         string evalExpression = $"{leftValue} {op} {rightValue}";
 
         // 调用你已有的表达式评估器
-        Debug.Log(leftValue+" "+rightValue+" "+evalExpression+" "+SimpleParser.Evaluate(evalExpression));
+         LogCenter.Log(leftValue+" "+rightValue+" "+evalExpression+" "+SimpleParser.Evaluate(evalExpression));
         return SimpleParser.Evaluate(evalExpression);
     }
     
@@ -42,13 +40,13 @@ public static class FieldResolver
     public static string GetVaribleData(string keyword, Card card, TriggerData triggerData)
     {
         if (string.IsNullOrEmpty(keyword)) return "";
-        /*Debug.Log(keyword);*/
+        /* LogCenter.Log(keyword);*/
         // 判断是否带有属性访问符（.）
         // 只有1个的情况
         var parts = keyword.Split('.');
         if (parts.Length == 1)
         {
-            Debug.Log("这个不需要解析"+keyword);
+             LogCenter.Log("这个不需要解析"+keyword);
             return keyword;
         }
         // 两个 class.varible
@@ -76,40 +74,40 @@ public static class FieldResolver
     {
         IClassResolver result = null;
         
-        if (Enum.TryParse("attack", ignoreCase: true, out ClassEnum type))
+        if (Enum.TryParse("attack", ignoreCase: true, out CardEnums.ObjectEnum type))
         {
-            Debug.Log($"转换成功: {type}");
+             LogCenter.Log($"转换成功: {type}");
         }
         else
         {
-            Debug.LogWarning("转换失败");
+             LogCenter.LogWarning("转换失败");
             return null;
         }
         
         switch (type)
         {
-            case ClassEnum.CurrentPlayer:
+            case CardEnums.ObjectEnum.CurrentPlayer:
                 result = BattleSystem.instance.currentPlayer;
                 break;
 
-            case ClassEnum.Me:
+            case CardEnums.ObjectEnum.Me:
                 result = BattleSystem.instance.GetPlayer(card.playerID,true);
                 break;
 
-            case ClassEnum.Op:
+            case CardEnums.ObjectEnum.Op:
                 result = BattleSystem.instance.GetPlayer(card.playerID,false);
                 break;
 
-            case ClassEnum.Self:
+            case CardEnums.ObjectEnum.Self:
                 result = card;
                 break;
             
-            case ClassEnum.Defender:
+            case CardEnums.ObjectEnum.Defender:
                 if (triggerData.MutiTarget != null && triggerData.MutiTarget.Count > 0)
                     result = triggerData.MutiTarget[0];
                 break;
 
-            case ClassEnum.Attacker:
+            case CardEnums.ObjectEnum.Attacker:
                 result = triggerData.Source;
                 break;
             // case ClassEnum.Target:
@@ -119,7 +117,7 @@ public static class FieldResolver
 
 
             default:
-                Debug.LogWarning($"未处理的 ClassEnum: {classType}");
+                 LogCenter.LogWarning($"未处理的 ClassEnum: {classType}");
                 break;
         }
 
@@ -149,7 +147,7 @@ public static class FieldResolver
             return value?.ToString() ?? "";
         }
 
-        Debug.LogWarning($"字段 '{field}' 不存在于卡牌对象中");
+         LogCenter.LogWarning($"字段 '{field}' 不存在于卡牌对象中");
         return "";
     }
 

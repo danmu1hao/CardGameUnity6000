@@ -57,7 +57,7 @@ public class HandCardDisplay : MonoBehaviour
         /*else
         {
             // 没找到，什么也不做（或打印提示）
-            Debug.LogWarning($"未找到卡牌图片：CardImage/{card.id}");
+             LogCenter.LogWarning($"未找到卡牌图片：CardImage/{card.id}");
         }*/
         
     }

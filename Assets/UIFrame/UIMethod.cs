@@ -17,7 +17,7 @@ public class UIMethod
         GameObject canvas = GameObject.Find("Canvas");
         if (canvas == null)
         {
-            Debug.LogError("Canvas not found");
+             LogCenter.LogError("Canvas not found");
         }
         return canvas;
     }

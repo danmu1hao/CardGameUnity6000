@@ -68,7 +68,7 @@ public class CardMouseInHand : MonoBehaviour, IDragHandler, IEndDragHandler, IBe
                 card.sacrificeTargets.Clear();
                 card.soulTargets.Clear();
                 MoveBack();
-                Debug.Log("卡牌使用失败，回到原位置");
+                 LogCenter.Log("卡牌使用失败，回到原位置");
             }
             else
             {

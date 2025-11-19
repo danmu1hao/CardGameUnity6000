@@ -27,6 +27,6 @@ public class sample : MonoBehaviour
         // 等待直到 result 不为空
         yield return new WaitUntil(() => result != null);
 
-        Debug.Log("玩家输入: " + result);
+         LogCenter.Log("玩家输入: " + result);
     }
 }

@@ -16,14 +16,14 @@ public class HoverHighlight : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.Log("Pointer Enter: " + gameObject.name);
+         LogCenter.Log("Pointer Enter: " + gameObject.name);
         if (target != null) target.color = hover;
         // TODO: 显示 Tooltip、播放动画、改变光标等
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        Debug.Log("Pointer Exit: " + gameObject.name);
+         LogCenter.Log("Pointer Exit: " + gameObject.name);
         if (target != null) target.color = _origin;
         // TODO: 隐藏 Tooltip、恢复状态
     }

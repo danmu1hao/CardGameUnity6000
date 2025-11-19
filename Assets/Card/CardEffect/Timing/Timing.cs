@@ -12,7 +12,7 @@ public class Timing
         bool success = Enum.TryParse(timingText, out timingEnum);
         if (success)
         {
-            Debug.Log($"✅ 成功将 '{timingText}' 解析为 TimingList.{timingEnum}");
+             LogCenter.Log($"✅ 成功将 '{timingText}' 解析为 TimingList.{timingEnum}");
         }
         return success;
     }

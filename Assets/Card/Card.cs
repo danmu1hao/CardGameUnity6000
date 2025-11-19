@@ -159,8 +159,8 @@ public class Card :IClassResolver
     {
         Leave(this.state);
         MoveTo(newState,field);
-        Debug.Log("move from "+state);
-        Debug.Log("move to "+newState);
+         LogCenter.Log("move from "+state);
+         LogCenter.Log("move to "+newState);
         this.state = newState;
     }
     
@@ -172,7 +172,7 @@ public class Card :IClassResolver
     {
         if (currentState==CardEnums.CardStateEnum.InField && field!=null)
         {
-            Debug.Log("field卡牌移除"+field.fieldIndex);
+             LogCenter.Log("field卡牌移除"+field.fieldIndex);
             field.card =  null;
         }
         List<Card> cardList = GetCardListByState(currentState,field);
@@ -186,11 +186,11 @@ public class Card :IClassResolver
     {
         if (newState==CardEnums.CardStateEnum.InField && field!=null)
         {
-            Debug.LogError("add to field");
+             LogCenter.LogError("add to field");
             this.field = field;
             field.card = this;
         }  else if(newState==CardEnums.CardStateEnum.InField && field==null) {
-            Debug.LogError("field is null");
+             LogCenter.LogError("field is null");
         }
         List<Card> cardList = GetCardListByState(newState);
         if (cardList != null)
@@ -209,7 +209,7 @@ public class Card :IClassResolver
 
     public string TryResolveCard(string resolveContent)
     {
-        Debug.Log(resolveContent);
+         LogCenter.Log(resolveContent);
         return null;
     }
 

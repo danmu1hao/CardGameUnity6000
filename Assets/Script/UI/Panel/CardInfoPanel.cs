@@ -65,13 +65,13 @@ public class CardInfoPanel : MonoBehaviour
                 RaycastHit2D hit = Physics2D.Raycast(Input.mousePosition, Vector2.zero);
                 if (hit.collider != null)
                 {
-                    Debug.Log("碰撞到物体");
+                     LogCenter.Log("碰撞到物体");
                     Card card = ReadCardData.ReadCard(hit.collider.gameObject);
                     if (card != null)
                     {
                         panel.SetActive(true);
                         UpdatePanelUI(card);
-                        Debug.Log("长按显示面板");
+                         LogCenter.Log("长按显示面板");
                     }
                 }
             }

@@ -4,19 +4,24 @@ public class LogCenter
 {
     public static void Log(string content)
     {
-        Debug.Log(content);
+         Debug.Log(content);
     }
+    public static void Log(int content)
+    {
+         Debug.Log(content.ToString());
+    }
+    
     public static void Info(string msg)
     {
-        Debug.Log(msg);
+         Debug.Log(msg);
     }
-    public static void Warning(string msg)
+    public static void LogWarning(string msg)
     {
-        Debug.LogWarning(msg);
+         Debug.LogWarning(msg);
     }
 
-    public static void Error(string msg)
+    public static void LogError(string msg)
     {
-        Debug.LogError(msg);
+         Debug.LogError(msg);
     }
 }

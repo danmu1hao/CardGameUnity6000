@@ -20,7 +20,7 @@ public class CardCreator : MonoBehaviour
         string inputText = inputField.text;
 
         // 输出到控制台
-        Debug.Log("输入内容: " + inputText);
+         LogCenter.Log("输入内容: " + inputText);
 
         // 如果想清空输入框：
         // inputField.text = "";

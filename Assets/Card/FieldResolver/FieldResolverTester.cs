@@ -27,7 +27,7 @@ public class FieldResolverTester : MonoBehaviour
         foreach (var expr in testCases)
         {
             bool result = FieldResolver.Resolver(expr, card, triggerData);
-            Debug.Log($"表达式：{expr} → 结果：{result}");
+             LogCenter.Log($"表达式：{expr} → 结果：{result}");
         }
     }
 }

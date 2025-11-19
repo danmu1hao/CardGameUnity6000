@@ -22,20 +22,20 @@ namespace UIFrame
 
             if (CanvasObj == null)
             {
-                Debug.LogWarning("NO CANVAS");
+                 LogCenter.LogWarning("NO CANVAS");
                 return null;
             }
             GameObject ui_obj = GameObject.Instantiate<GameObject>
                 (Resources.Load<GameObject>(uitype.Path),CanvasObj.transform);
 
             return ui_obj;
-            Debug.LogWarning("NO SUCH UI");
+             LogCenter.LogWarning("NO SUCH UI");
             return null;
         }
 
         public void Push(BasePanel panel)
         {
-            Debug.Log("PUSH"+panel.UIType.Name);
+             LogCenter.Log("PUSH"+panel.UIType.Name);
             if (stack_ui.Count > 0)
             {
                stack_ui.Peek().OnDisable(); 

@@ -46,7 +46,7 @@ public class GameManager : QuickInstance<GameManager>
             string line = cardData[i];
             if (string.IsNullOrWhiteSpace(line)) continue;
 
-            Debug.Log(line);
+             LogCenter.Log(line);
 
             CardConfig card = new CardConfig(line);
             cardConfigDict.Add(card.id, card);
@@ -76,7 +76,7 @@ public class GameManager : QuickInstance<GameManager>
             string effectIDStr = effectData[0].Trim();
             if (effectIDStr.Length < 9)
             {
-                LogCenter.Warning($"EffectID 长度不足 9 位：{effectIDStr}（行:{line})");
+                LogCenter.LogWarning($"EffectID 长度不足 9 位：{effectIDStr}（行:{line})");
                 continue;
             }
 
@@ -87,7 +87,7 @@ public class GameManager : QuickInstance<GameManager>
             int effectGroupID = 0;
             if(!int.TryParse(cardIDStr, out  cardID)
                || !int.TryParse(effectIndexStr, out  effectGroupID))
-                LogCenter.Warning("读取效果数据失败");
+                LogCenter.LogWarning("读取效果数据失败");
 
             // 1）填充 cardIDEffectConfigDict：卡牌ID -> 该卡所有效果ID
             if (!cardIDEffectConfigDict.TryGetValue(cardID, out var effectIDList))
@@ -99,12 +99,12 @@ public class GameManager : QuickInstance<GameManager>
             if (!effectIDEffectConfigDict.TryGetValue(effectGroupID, out CardEffectConfig effectConfigList))
             {
                 //如果还没有这个Config
-                if(effectGroupID.ToString().Length!=9) LogCenter.Warning("效果ID长度错误");
+                if(effectGroupID.ToString().Length!=9) LogCenter.LogWarning("效果ID长度错误");
                 CardEffectConfig cardEffectConfig = new CardEffectConfig(line);
                 effectIDEffectConfigDict.Add(effectGroupID, cardEffectConfig);
             }else
             {
-                if(effectGroupID.ToString().Length!=10) LogCenter.Warning("原子ID长度错误");
+                if(effectGroupID.ToString().Length!=10) LogCenter.LogWarning("原子ID长度错误");
                 effectIDEffectConfigDict[effectGroupID].AddAtomicEffectConfig(line);
             }
         }
@@ -112,10 +112,10 @@ public class GameManager : QuickInstance<GameManager>
     }
 
     /*
-    Debug.Log(cardConfigDict.Count);
+     LogCenter.Log(cardConfigDict.Count);
     foreach (var VARIABLE in cardConfigDict)
     {
-        Debug.LogWarning(VARIABLE.Key);
+         LogCenter.LogLogWarning(VARIABLE.Key);
     }*/
     public void PrepareDeck()
     {
@@ -133,19 +133,19 @@ public class GameManager : QuickInstance<GameManager>
         foreach (var cardData in cardDatas)
         {
             string[] cardCount = cardData.Split(',');
-            Debug.Log(cardCount.Length);
-            Debug.Log(cardCount[0]);
+             LogCenter.Log(cardCount.Length);
+             LogCenter.Log(cardCount[0]);
             // 调试：把行内每个字符的十六进制码位打印出来
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
             foreach (char ch in cardData)
             {
                 sb.AppendFormat("\\u{0:X4}", (int)ch);  // 例如 \uFEFF \u000D \u000A
             }
-            Debug.Log($"RAW LINE HEX: {sb}");  // 如果第一条打印出 \uFEFF\u000D 之类，就对了
+             LogCenter.Log($"RAW LINE HEX: {sb}");  // 如果第一条打印出 \uFEFF\u000D 之类，就对了
 
             
             int id = int.Parse(cardCount[0]);
-            Debug.Log(id);
+             LogCenter.Log(id);
             int cardNum = int.Parse(cardCount[1]);
 
             for (int i = 0; i < cardNum; i++)
@@ -155,7 +155,7 @@ public class GameManager : QuickInstance<GameManager>
                 card.Move(CardEnums.CardStateEnum.InDeck);
 
             }
-            Debug.Log(player.inDeckCards.Count);
+             LogCenter.Log(player.inDeckCards.Count);
 
         }
         ListExtensions.Shuffle(player.inDeckCards);
@@ -167,7 +167,7 @@ public class GameManager : QuickInstance<GameManager>
         {
             return config;
         }
-        Debug.LogError($"CardConfig with ID {id} not found.");
+         LogCenter.LogError($"CardConfig with ID {id} not found.");
         return default;
     }
 

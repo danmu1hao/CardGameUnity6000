@@ -203,7 +203,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
 
         if (card.sacrificeCost > 0)
         {
-            Debug.Log("开始血祭");
+             LogCenter.Log("开始血祭");
             if (SacrificeCheck(card))
             {
                 card.sacrificeTargets=await SacrificeCosts(card);
@@ -220,18 +220,18 @@ public class BattleSystem : QuickInstance<BattleSystem>
         }
         else if (card.soulCost > 0)
         {
-            Debug.Log("开始灵魂召唤"+card.soulCost+"灵魂消耗"+card.player.inSoulCards.Count+"灵魂");
+             LogCenter.Log("开始灵魂召唤"+card.soulCost+"灵魂消耗"+card.player.inSoulCards.Count+"灵魂");
             if (SoulSummonCheck(card))
             {
                 card.soulTargets=await SoulCosts(card);
                 if (card.soulTargets.Count==0)
                 {
-                    Debug.Log("灵魂失败");
+                     LogCenter.Log("灵魂失败");
                     return false;
                 }
                 else
                 {
-                    Debug.Log("灵魂选择成功");
+                     LogCenter.Log("灵魂选择成功");
                 }
             }
             else
@@ -262,7 +262,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
         {
             foreach (var soulCard in card.soulTargets)
             {
-                Debug.Log(soulCard.name+"进入墓地");
+                 LogCenter.Log(soulCard.name+"进入墓地");
                 soulCard.Move(CardEnums.CardStateEnum.InCemetery);
             }
         }
@@ -271,7 +271,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
         {
             foreach (var sacrificeCard in card.sacrificeTargets)
             {
-                Debug.Log(sacrificeCard.name+"进入墓地");
+                 LogCenter.Log(sacrificeCard.name+"进入墓地");
                 DestroyFieldCard(sacrificeCard);
             }
 
@@ -295,7 +295,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
     public  bool SacrificeCheck(Card card)
     {
         // 确认祭品是否足够
-        Debug.Log("祭品需求"+card.sacrificeCost+ "场上卡牌数量"+card.player.inFieldCards.Count);
+         LogCenter.Log("祭品需求"+card.sacrificeCost+ "场上卡牌数量"+card.player.inFieldCards.Count);
         if (card.player.inFieldCards.Count >= card.sacrificeCost)
         {
             return true;
@@ -308,7 +308,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
     {
         //进入一个选择界面
         List<Card> sacrificeCards = FindTarget(c => c.player == currentPlayer && c.state == CardEnums.CardStateEnum.InField);
-        Debug.Log("找到祭品"+sacrificeCards.Count);
+         LogCenter.Log("找到祭品"+sacrificeCards.Count);
         List<Card> chosen = await UIManager.instance.OpenSelectPanel(sacrificeCards);
 
         /*foreach (var chosCard in chosen)
@@ -322,7 +322,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
     {
         //进入一个选择界面
         List<Card> soulCards = FindTarget(c => c.player == currentPlayer && c.state == CardEnums.CardStateEnum.InSoul);
-        Debug.Log("找到灵魂"+soulCards.Count);
+         LogCenter.Log("找到灵魂"+soulCards.Count);
         List<Card> chosen = await UIManager.instance.OpenSelectPanel(soulCards);
 
         return chosen;
@@ -358,7 +358,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
     
     public  void DrawCard(Player player)
     {
-        Debug.Log("执行抽卡");
+         LogCenter.Log("执行抽卡");
         if (player.inDeckCards.Count<=0)
         {
             return;
@@ -378,10 +378,10 @@ public class BattleSystem : QuickInstance<BattleSystem>
 
     public void DisCard(Player player,Card card)
     {
-        Debug.Log("执行丢卡");
+         LogCenter.Log("执行丢卡");
         if (!player.inHandCards.Contains(card))
         {
-            Debug.Log("玩家手里并不存在这张卡");
+             LogCenter.Log("玩家手里并不存在这张卡");
             return;
         }
 
@@ -483,7 +483,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
     private void CheckSummon(RaycastHit2D hit)
     {
         Field field = hit.collider.gameObject.GetComponent<FieldUI>().field;
-        Debug.Log($"Hit UI element: {hit.collider.gameObject.name}");
+         LogCenter.Log($"Hit UI element: {hit.collider.gameObject.name}");
         // 是当前玩家 对象没卡 || 对象有卡 但是，那个卡将会被牺牲
 
 
@@ -504,7 +504,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
         //状态处理
         card.Move(CardEnums.CardStateEnum.InSoul);
         Destroy(card.cardModel);
-        Debug.Log(card.player.inSoulCards.Count);
+         LogCenter.Log(card.player.inSoulCards.Count);
     }
 
     public void SummonCard(Card card,GameObject field)

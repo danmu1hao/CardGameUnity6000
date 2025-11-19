@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using Target = CardEnums.ObjectEnum;
 
 public class Target
 {
@@ -10,7 +11,7 @@ public class Target
     
     //目前构想 select_count or self,player...
     public  List<Card> targetCards = new List<Card>();
-    public Player targetPlayer;
+    public Player targetPlayer = null;
     
     public Target(AtomicEffect atomicEffect,List<string> targetStringList)
     {
@@ -25,7 +26,7 @@ public class Target
     public async Task<bool> GetValidTargets()
     {
         List<Card> targets = new List<Card>();
-        Debug.Log($"开始查找效果目标");
+         LogCenter.Log($"开始查找效果目标");
 
         // 情况1 选对象 通过额外信息的select_count=1判断
         foreach (var infoEnum in atomicEffect.AtomicEffect_Extra_Info)
@@ -37,52 +38,57 @@ public class Target
         }
         
         
+        // 情况2 对象已知
         List<Card> allCards = BattleSystem.instance.allCardsInBattle;
         
         foreach (var targetCondition in targetStringList)
         {
-            var result = ResolveTargetList(targetCondition, cardEffect.card, cardEffect.triggerData);
+            ResolveTargetList(targetCondition, atomicEffect.card, atomicEffect.triggerData);
         }
-        
 
+        if (targetCards.Count == 0 && targetPlayer == null)
+        {
+            return false;
+            LogCenter.LogWarning("找对象失败？");
+        }
 
-        string targetKeyword = targetList[1];
-        Debug.Log($"[FindTarget] 解析目标字段为：{targetKeyword}");
-
-        
-
-        Debug.Log($"[FindTarget] 成功解析目标，返回 {result?.Count ?? 0} 个对象");
-        return targets;
+        return true;
     }
     
-    // public void FindTarget(string keyword, Card card, TriggerData triggerData)
-    // {
-    //     Debug.Log($"[FindTarget] 收到目标字符串：{keyword}");
-    //
-    //     string[] targetList = keyword.Split('=');
-    //     if (targetList.Length < 2)
-    //     {
-    //         Debug.LogError($"[FindTarget] 目标格式错误：{keyword}");
-    //
-    //     }
-    //
-    //     string targetKeyword = targetList[1];
-    //     Debug.Log($"[FindTarget] 解析目标字段为：{targetKeyword}");
-    //
-    //     var result = ResolveTargetList(targetKeyword, card, triggerData);
-    //
-    //     Debug.Log($"[FindTarget] 成功解析目标，返回 {result?.Count ?? 0} 个对象");
-    //
-    // }
-
-    //赋值操作，这里暂且再来一次
-
-    public void CheckValidTargets()
+    // TODO 为了以防万一 如果最后效果没有发动成功，需要初始化
+    void ReSetTarget()
     {
-        List<Card> targets = new List<Card>();
-        Debug.Log($"开始确认是否存在效果目标");
+        targetCards.Clear();
+        targetPlayer = null;
+    }
 
+    public bool CheckValidTargetsExist()
+    {
+        // 情况1 选对象 因为只是判断
+        foreach (var infoEnum in atomicEffect.AtomicEffect_Extra_Info)
+        {
+            if (infoEnum==CardEnums.ExtraInfoEnum.Select)
+            {
+                // 要选择对象
+            }
+        }
+        
+        
+        // 情况2 对象已知
         List<Card> allCards = BattleSystem.instance.allCardsInBattle;
+        
+        foreach (var targetCondition in targetStringList)
+        {
+            ResolveTargetList(targetCondition, atomicEffect.card, atomicEffect.triggerData);
+        }
+
+        if (targetCards.Count == 0 && targetPlayer == null)
+        {
+            return false;
+            LogCenter.LogWarning("找对象失败？");
+        }
+
+        return true;
 
     }
     
@@ -91,30 +97,44 @@ public class Target
         return targetCards.Contains(card);
     }
     
-    private static void ResolveTargetList(string keyword, Card card, TriggerData triggerData)
+    // csharp
+    private void ResolveTargetList(string keyword, Card card, TriggerData triggerData)
     {
+        // 每次解析前清空上次结果
+        targetCards = new List<Card>();
+        targetPlayer = null;
+
         switch (keyword)
         {
             case "self":
-                return new List<ITargetable> { card };
+                targetCards = new List<Card> { card };
+                break;
 
             case "attacker":
-                return triggerData.Source != null
-                    ? new List<ITargetable> { triggerData.Source }
-                    : new List<ITargetable>();
+                if (triggerData?.Source != null)
+                    targetCards = new List<Card> { triggerData.Source };
+                else
+                    targetCards = new List<Card>();
+                break;
 
             case "defender":
-                return (triggerData.MutiTarget != null && triggerData.MutiTarget.Count > 0)
-                    ? new List<ITargetable> { triggerData.MutiTarget[0] }
-                    : new List<ITargetable>();
+                if (triggerData?.MutiTarget != null && triggerData.MutiTarget.Count > 0 && triggerData.MutiTarget[0] != null)
+                    targetCards = new List<Card> { triggerData.MutiTarget[0] };
+                else
+                    targetCards = new List<Card>();
+                break;
 
             case "player":
-                return new List<ITargetable> { card.player };
+                targetPlayer = card?.player;
+                break;
 
             default:
-                return new List<ITargetable>();
+                targetCards = new List<Card>();
+                break;
         }
+        LogCenter.Log("解析目标完成");
     }
+
 
     
 }

@@ -16,17 +16,21 @@ public abstract class AtomicEffect
     public string AtomicEffect_Duration => AtomicEffectConfig.effectDuration;
 
     #endregion
+    public Player targetPlayer => target.targetPlayer;
+    public Card card => cardEffect.card;
+    
     public List<ExtraInfoEnum> AtomicEffect_Extra_Info;
 
     public Target target;
     public CardEffect cardEffect;
     
     public List<Card> targetCards => target.targetCards;
-    public Player targetPlayer => target.targetPlayer;
+
     
     int effectNum;  
     public List<Card> targetCardList=new List<Card>();
-
+    
+    public TriggerData triggerData =>cardEffect.triggerData;
     protected AtomicEffect()
     {
     }
@@ -63,24 +67,24 @@ public abstract class AtomicEffect
         
         if (cardEffect == null)
         {
-            Debug.LogError($"{GetType().Name}: cardEffect 为空");
+             LogCenter.LogError($"{GetType().Name}: cardEffect 为空");
             return false;
         }
 
         if (cardEffect.card == null)
         {
-            Debug.LogError($"{GetType().Name}: cardEffect.card 为空");
+             LogCenter.LogError($"{GetType().Name}: cardEffect.card 为空");
             return false;
         }
 
         if (cardEffect.card.name == null)
         {
-            Debug.LogError($"{GetType().Name}: cardEffect.card.name 为空");
+             LogCenter.LogError($"{GetType().Name}: cardEffect.card.name 为空");
             return false;
         }
 
         
-        Debug.Log($"执行效果 {GetType().Name}");
+         LogCenter.Log($"执行效果 {GetType().Name}");
         await OnExecute();
 
         return true;

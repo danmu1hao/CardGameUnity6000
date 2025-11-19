@@ -5,6 +5,8 @@ using CardTypeEnum = CardEnums.CardTypeEnum;
 
 public class CardEffect
 {
+    //TODO 这个是否正确？
+    public bool canActive_UI;
     //用于记录触发器信息，比如攻击者是谁，这里采用依赖注入，每次进入效果必然传入
     public TriggerData triggerData;
     
@@ -55,7 +57,7 @@ public class CardEffect
             if (AtomicEffect == null)
             {
                 AtomicEffect = new NoneType();
-                Debug.Log("nonetype");
+                 LogCenter.Log("nonetype");
             }
             this.AtomicEffect.cardEffect=this;
         }
@@ -71,7 +73,7 @@ public class CardEffect
         this.card = card;
             
         timing.LoadTiming(this.cardEffectConfig.timing);
-        Debug.Log(card.name+cardEffectConfig.timing);
+         LogCenter.Log(card.name+cardEffectConfig.timing);
     }
 
 
@@ -82,12 +84,19 @@ public class CardEffect
 
 
 
-    #region EffectActive    
+    #region EffectActive
 
+    public async Task<bool> Start()
+    {
+        bool preSuccess = await CardEffectAcitvePre();
+        if (!preSuccess) return false;
+        return await ActiveCardEffect();
+    }
+    
     /// <summary>
     /// TODO 效果发动
     /// </summary>
-    public async Task<bool> CardEffectAcitvePre()
+    async Task<bool> CardEffectAcitvePre()
     {
         // 记住 目前不确定如果pre需要连续选择好几次对象会咋样
         foreach (var atomicEffect in preEffectList)
@@ -97,7 +106,7 @@ public class CardEffect
 
         return true;
     }
-    public async Task<bool> ActiveCardEffect()
+    async Task<bool> ActiveCardEffect()
     {
         return true;
     }
@@ -105,11 +114,7 @@ public class CardEffect
     #endregion
 
 
-    #region Effect
 
-    
-
-    #endregion
     
 
 
