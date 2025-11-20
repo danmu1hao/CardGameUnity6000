@@ -6,6 +6,6 @@ public class test_skill : AtomicEffect
     protected override async Task OnExecute()
     {
 
-         LogCenter.Log("Test");
+        Debug.Log("Test");
     }
 }

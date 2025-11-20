@@ -18,7 +18,7 @@ public struct CardConfig
     public CardConfig(string cardData)
     {
         var parts = cardData.Split(',');
-         LogCenter.Log(parts.Length);
+        Debug.Log(parts.Length);
 
         id = int.TryParse(parts[0], out var tempId) ? tempId : 0;
         name = parts[1];

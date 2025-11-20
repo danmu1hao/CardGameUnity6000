@@ -58,21 +58,25 @@ public class Card :IClassResolver
         this.CardConfig = cardConfig;
 
         Sprite sprite = Resources.Load<Sprite>("CardImage/" + this.id.ToString());
-        if (sprite!= null)
+        if (sprite != null)
         {
             this.cardImage = sprite;
         }
 
-        
+
         // TODO 之后再确认一下，这里给卡牌添加效果
         // 卡牌获取自己所有的卡牌效果id
-        List<int> effectConfigIDList = GameManager.instance.cardIDEffectConfigDict[id];
-        foreach (int cardeffectID in effectConfigIDList)
+        if (GameManager.instance.cardID_EffectConfigDict.ContainsKey(id))
         {
-            CardEffectConfig effectConfigList = GameManager.instance.effectIDEffectConfigDict[cardeffectID];
-            CardEffect cardEffect = new CardEffect(effectConfigList,this);
-            cardEffectList.Add(cardEffect);
+            List<CardEffectConfig> effectConfigIDList = GameManager.instance.cardID_EffectConfigDict[id];
+            foreach (CardEffectConfig cardEffectConfig in effectConfigIDList)
+            {
+                CardEffect cardEffect = new CardEffect(cardEffectConfig,this);
+                cardEffectList.Add(cardEffect);
+            }
         }
+
+
         
 
         
@@ -159,8 +163,8 @@ public class Card :IClassResolver
     {
         Leave(this.state);
         MoveTo(newState,field);
-         LogCenter.Log("move from "+state);
-         LogCenter.Log("move to "+newState);
+        Debug.Log("move from "+state);
+        Debug.Log("move to "+newState);
         this.state = newState;
     }
     
@@ -172,7 +176,7 @@ public class Card :IClassResolver
     {
         if (currentState==CardEnums.CardStateEnum.InField && field!=null)
         {
-             LogCenter.Log("field卡牌移除"+field.fieldIndex);
+            Debug.Log("field卡牌移除"+field.fieldIndex);
             field.card =  null;
         }
         List<Card> cardList = GetCardListByState(currentState,field);
@@ -186,11 +190,11 @@ public class Card :IClassResolver
     {
         if (newState==CardEnums.CardStateEnum.InField && field!=null)
         {
-             LogCenter.LogError("add to field");
+            Debug.LogError("add to field");
             this.field = field;
             field.card = this;
         }  else if(newState==CardEnums.CardStateEnum.InField && field==null) {
-             LogCenter.LogError("field is null");
+            Debug.LogError("field is null");
         }
         List<Card> cardList = GetCardListByState(newState);
         if (cardList != null)
@@ -209,7 +213,7 @@ public class Card :IClassResolver
 
     public string TryResolveCard(string resolveContent)
     {
-         LogCenter.Log(resolveContent);
+        Debug.Log(resolveContent);
         return null;
     }
 

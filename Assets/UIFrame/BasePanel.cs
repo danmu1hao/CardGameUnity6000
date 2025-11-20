@@ -12,7 +12,7 @@ namespace UIFrame
         }
         public virtual void OnStart()
         {
-             LogCenter.Log("start use");
+            Debug.Log("start use");
         }
         public virtual void OnEnable()
         {

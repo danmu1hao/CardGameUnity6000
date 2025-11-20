@@ -5,7 +5,7 @@ public class destory : AtomicEffect
 {
     protected override async Task OnExecute()
     {
-        foreach (var card in targetCardList)
+        foreach (var card in targetCards)
         {
             BattleSystem.instance.DestroyFieldCard(card);
         }

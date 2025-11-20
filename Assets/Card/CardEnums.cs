@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 public static class CardEnums
 {
@@ -83,7 +84,7 @@ public static class CardEnums
     public static T TryGetEnum<T>(string value) where T : struct, Enum
     {
         if (Enum.TryParse<T>(value, true, out var result)) return result;
-        LogCenter.LogWarning("enum转换失败");   
+        Debug.LogWarning("enum转换失败");   
         if (string.IsNullOrWhiteSpace(value)) return default;
         return default;
     }

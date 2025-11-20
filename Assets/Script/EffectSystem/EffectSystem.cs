@@ -7,12 +7,23 @@ using TimingEnum=CardEnums.TimingEnum;
 
 public class EffectSystem : QuickInstance<EffectSystem>
 {
-    public static EffectSystem instance;
+
     // Start is called before the first frame update
     
     public GameObject EffectPanelUI;
 
     #region TimingEffectDict
+
+    public void SubscribeAllEffect()
+    {
+        foreach (var card in BattleSystem.instance.allCardsInBattle)
+        {
+            foreach (var cardEffect in card.cardEffectList)
+            {
+                SubscribeReaction(cardEffect.timing.timingEnum, cardEffect);
+            }
+        }
+    }
     
     public static Dictionary<TimingEnum,List<CardEffect>> timingEffectTriggerDict=
         new Dictionary<TimingEnum,List<CardEffect>>();
@@ -30,8 +41,12 @@ public class EffectSystem : QuickInstance<EffectSystem>
 
         // 避免重复添加
         if (!list.Contains(cardEffect)){
-            LogCenter.LogWarning("重复添加了效果");
+
             list.Add(cardEffect);}
+        else
+        {
+            Debug.LogWarning("重复添加了效果");
+        }
     }
     /// <summary>
     /// 取消注册
@@ -57,7 +72,7 @@ public class EffectSystem : QuickInstance<EffectSystem>
     /// </summary>
     public async Task TimingTrigger(CardEnums.TimingEnum timing, TriggerData triggerData)
     {
-         LogCenter.Log("时点触发 "+timing.ToString());
+        Debug.Log("时点触发 "+timing.ToString());
         await PlayerAcitveEffects(timing, triggerData);
         await ProcessChain();
     }
@@ -70,12 +85,12 @@ public class EffectSystem : QuickInstance<EffectSystem>
         {
             return;
         }
-         LogCenter.Log("效果开始执行");
+        Debug.Log("效果开始执行");
         isActiving = true;
         while (_chainStack.Count > 0)
         {
             // 取出最上层的小栈，看看是不是空
-            var currentEffect = _chainStack.Peek();
+            var currentEffect = _chainStack.Pop();
 
             await ExecuteEffectAsync(currentEffect);
             await ShowEffectAnimation(currentEffect);
@@ -87,59 +102,7 @@ public class EffectSystem : QuickInstance<EffectSystem>
 
     #endregion
     
-    
-    // 时点产生导致的效果检测
-    // 处理玩家是否发动卡牌
-    async Task PlayerAcitveEffects(CardEnums.TimingEnum timing, TriggerData triggerData)
-    {
-        // 注意，每个时点都是一个完整stack链条
-
-        // 把所有的能发动效果的卡给我
-        List<CardEffect> cardEffects=GetCanActiveCardEffect(timing,triggerData);
-        List<CardEffect> playerEffects,enemyEffects=new List<CardEffect>();
-        // 分离出玩家和敌人的效果
-        playerEffects = cardEffects.Where(x => x.card.player == BattleSystem.instance.currentPlayer).ToList();
-        enemyEffects= cardEffects.Where(x => x.card.player !=  BattleSystem.instance.currentPlayer).ToList();
-        // 按照顺序询问
-         LogCenter.Log("询问玩家效果");
-        await SelectCards_PopStacks(playerEffects);
-         LogCenter.Log("询问敌方效果");
-        await SelectCards_PopStacks(enemyEffects);
-    }
-
-    // 展示 → 选择 → 入队
-    async Task SelectCards_PopStacks(List<CardEffect> cardEffect)
-    {
-        //其实发过去的是卡牌 准确说是卡牌的可执行的效果
-        List<CardEffect> cardEffect_temp=new List<CardEffect>(cardEffect);
-        List<Card> cards= cardEffect_temp.Select(x => x.card).ToList();
-        //准确来说是可以发动的卡效果，每次支付要更新的
-        while(cards.Count>0)
-        {
-            // 我可以补选的
-            //TODO 这里目前没判断选哪个效果
-             LogCenter.Log("等待选择效果");
-            CardEffect selectEffect= await UIManager.instance.OpenSelectPanel(cardEffect_temp);
-            await Task.Delay(50); // 等待 0.1 秒
-             LogCenter.Log("选择效果返回 "+(selectEffect!=null?selectEffect.cardEffectConfig.effectText:"空"));
-            if (selectEffect!=null)
-            {
-
-                // TODO 我需要移除那个选择的对象
-                 LogCenter.Log("选择了效果 "+selectEffect.cardEffectConfig.effectText);
-                cards.Remove(selectEffect.card);
-                
-                // TODO 这是备忘录，在这里添加了效果
-                LogCenter.Log("添加了效果"+selectEffect.cardEffectConfig.effectText);
-                _chainStack.Push(selectEffect);
-            }
-            else
-            {
-                break;
-            }
-        }
-
-    }
+        
     #region  check
     
     List<CardEffect> GetCanActiveCardEffect(TimingEnum timing, TriggerData triggerData)
@@ -160,17 +123,18 @@ public class EffectSystem : QuickInstance<EffectSystem>
 
     bool CheckSingleEffect(CardEffect effect, TriggerData triggerData)
     {
-        if (effect.AtomicEffect is NoneType)
+        // 1.传入当前发生事件
+        effect.ImportTriggerData(triggerData);
+        
+        if (effect.AtomicEffectList is NoneType)
         {
             return false;
         }
-        // 1.传入当前发生事件
-        effect.triggerData = triggerData;
+
         // 2. 条件检测
         if (!CheckCondition(effect)) return false;
 
-        // 3. 支付费用检测
-        if (!CheckCost(effect)) return false;
+
 
         return true;
     }
@@ -181,14 +145,64 @@ public class EffectSystem : QuickInstance<EffectSystem>
         return effect.condition.CheckConditionAndTarget(); // 你原本的方法
     }
     
-    bool CheckCost(CardEffect effect)
-    {
-        
-        return true;
-    }
 
     #endregion
+
     
+    // 时点产生导致的效果检测
+    // 处理玩家是否发动卡牌
+    async Task PlayerAcitveEffects(CardEnums.TimingEnum timing, TriggerData triggerData)
+    {
+        // 注意，每个时点都是一个完整stack链条
+
+        // 把所有的能发动效果的卡给我
+        List<CardEffect> cardEffects=GetCanActiveCardEffect(timing,triggerData);
+        Debug.Log(cardEffects.Count()+"张卡可以发动");
+        List<CardEffect> playerEffects,enemyEffects=new List<CardEffect>();
+        // 分离出玩家和敌人的效果
+        playerEffects = cardEffects.Where(x => x.card.player == BattleSystem.instance.currentPlayer).ToList();
+        enemyEffects= cardEffects.Where(x => x.card.player !=  BattleSystem.instance.currentPlayer).ToList();
+        // 按照顺序询问
+        Debug.Log("询问玩家效果");
+        await SelectCards_PopStacks(playerEffects);
+        Debug.Log("询问敌方效果");
+        await SelectCards_PopStacks(enemyEffects);
+    }
+
+    // 展示 → 选择 → 入队
+    async Task SelectCards_PopStacks(List<CardEffect> cardEffect)
+    {
+        //其实发过去的是卡牌 准确说是卡牌的可执行的效果
+        List<CardEffect> cardEffect_temp=new List<CardEffect>(cardEffect);
+        List<Card> cards= cardEffect_temp.Select(x => x.card).ToList();
+        //准确来说是可以发动的卡效果，每次支付要更新的
+        while(cards.Count>0)
+        {
+            // 我可以补选的
+            //TODO 这里目前没判断选哪个效果
+            Debug.Log("等待选择效果");
+            CardEffect selectEffect= await UIManager.instance.OpenSelectPanel(cardEffect_temp);
+            await Task.Delay(50); // 等待 0.1 秒
+            Debug.Log("选择效果返回 "+(selectEffect!=null?selectEffect.cardEffectConfig.effectText:"空"));
+            if (selectEffect!=null)
+            {
+
+                // TODO 我需要移除那个选择的对象
+                Debug.Log("选择了效果 "+selectEffect.cardEffectConfig.effectText);
+                cards.Remove(selectEffect.card);
+                
+                // TODO 这是备忘录，在这里添加了效果
+               Debug.Log("添加了效果"+selectEffect.cardEffectConfig.effectText);
+                _chainStack.Push(selectEffect);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+    }
+
 
     #region  EffectSys 
     
@@ -205,15 +219,14 @@ public class EffectSystem : QuickInstance<EffectSystem>
 
     private async Task ExecuteEffectAsync(CardEffect cardEffect)
     {
-
-        await ShowEffectAnimation(cardEffect);
+        
         await cardEffect.Start();
 
     }
 
     private async Task ShowEffectAnimation(CardEffect cardEffect)
     {
-         LogCenter.Log($"[EffectSystem] 播放效果动画：{cardEffect.cardEffectConfig.effectText}（卡：{cardEffect.card.name}）");
+        Debug.Log($"[EffectSystem] 播放效果动画：{cardEffect.cardEffectConfig.effectText}（卡：{cardEffect.card.name}）");
         await Task.Delay(1000); // 模拟动画等待
     }
     
@@ -231,13 +244,13 @@ public class EffectSystem : QuickInstance<EffectSystem>
     //          {
     //              if (CheckSingleEffect(effect, triggerData, timing))
     //              {
-    //                   LogCenter.Log("检测到可发动卡牌 " + card.name);
+    //                  Debug.Log("检测到可发动卡牌 " + card.name);
     //                  effectList.Add(effect);
     //              }
     //          }
     //      }
     //
-    //       LogCenter.Log(timing.ToString()+"时点检测完毕"+effectList.Count);
+    //      Debug.Log(timing.ToString()+"时点检测完毕"+effectList.Count);
     //      
     //      for (int i = effectList.Count - 1; i >= 0; i--)
     //      {

@@ -1,9 +1,11 @@
 using System;
+using UnityEngine;
 
 [Serializable]
 public struct AtomicEffectConfig
 {
-    public int effectID;          // 原子效果ID
+    // 很搞笑，int不够用了
+    public long effectID;          // 原子效果ID
     public string effectName;     // 原子效果名
     public string internalDesc;   // 自用描述 Atomic_Text
     public string effect;         // 原子效果类型 / 名
@@ -34,9 +36,9 @@ public struct AtomicEffectConfig
 
         // 去掉首尾空白
         for (int i = 0; i < datas.Length; i++)
-            datas[i] = datas[i]?.Trim();
-
-        int.TryParse(datas[0], out effectID); // EffectID
+            datas[i] = datas[i]?.Trim();    
+        Debug.Log(datas[0]);
+        long.TryParse(datas[0], out effectID); // EffectID
         effectName     = datas[1];            // Effect_Name
         internalDesc   = datas[3];            // Atomic_Text
         effect         = datas[5];            // Effect
@@ -44,5 +46,10 @@ public struct AtomicEffectConfig
         target         = datas[9];            // Target
         effectDuration = datas[10];           // EffectDuration
         extra          = datas[12];           // Extra_Info
+        Debug.Log(TESTDEBUG());
+    }
+    public string TESTDEBUG()
+    {
+        return $"[AtomicEffectConfig] ID={effectID} Name=\"{effectName}\" InternalDesc=\"{internalDesc}\" Effect=\"{effect}\" Detail=\"{effectDetail}\" Target=\"{target}\" Duration=\"{effectDuration}\" Extra=\"{extra}\"";
     }
 }

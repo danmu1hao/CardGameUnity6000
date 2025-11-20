@@ -75,12 +75,12 @@ public class BattleSystemUI : QuickInstance<BattleSystemUI>
         if (isPlayer)
         {
             cardModel.transform.SetParent(playerHandCardField.transform);
-            StartCoroutine(playerHandCardField.GetComponent<DrawCardUI>().AddCard(cardModel.gameObject.GetComponent<RectTransform>()));
+            StartCoroutine(playerHandCardField.GetComponent<HandCardLayoutUI>().AddCard(cardModel.gameObject.GetComponent<RectTransform>()));
         }
         else
         {
             cardModel.transform.SetParent(enemyHandCardField.transform);
-            StartCoroutine(enemyHandCardField.GetComponent<DrawCardUI>().AddCard(cardModel.gameObject.GetComponent<RectTransform>()));
+            StartCoroutine(enemyHandCardField.GetComponent<HandCardLayoutUI>().AddCard(cardModel.gameObject.GetComponent<RectTransform>()));
         }
         
         card.cardModel = cardModel;
@@ -92,11 +92,11 @@ public class BattleSystemUI : QuickInstance<BattleSystemUI>
         GameObject cardModel = card.cardModel;
         if (card.player==BattleSystem.instance.Player1)
         {
-            playerHandCardField.GetComponent<DrawCardUI>().DeleteCard(cardModel.gameObject.GetComponent<RectTransform>());
+            playerHandCardField.GetComponent<HandCardLayoutUI>().DeleteCard(cardModel.gameObject.GetComponent<RectTransform>());
         }
         else
         {
-            enemyHandCardField.GetComponent<DrawCardUI>().DeleteCard(cardModel.gameObject.GetComponent<RectTransform>());
+            enemyHandCardField.GetComponent<HandCardLayoutUI>().DeleteCard(cardModel.gameObject.GetComponent<RectTransform>());
         }
         GameObject.Destroy(cardModel);  
     }

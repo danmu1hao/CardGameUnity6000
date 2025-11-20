@@ -26,7 +26,7 @@
 
 //     public override void Enter()
 //     {
-//          LogCenter.Log("进入回合开始阶段：准备出牌");
+//         Debug.Log("进入回合开始阶段：准备出牌");
 
 //         BattleSystem.Instance.DrawCard();
         
@@ -82,11 +82,11 @@
         
 //         if (BattleSystem.Instance.currentPlayer==BattleSystem.Instance.Player1)
 //         {
-//              LogCenter.Log("玩家1回合结束：切换玩家");
+//             Debug.Log("玩家1回合结束：切换玩家");
 //         }
 //         else
 //         {
-//              LogCenter.Log("玩家2回合结束：切换玩家");
+//             Debug.Log("玩家2回合结束：切换玩家");
 //         }
         
         

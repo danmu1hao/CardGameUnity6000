@@ -6,8 +6,12 @@ public class discard_card : AtomicEffect
     protected override async Task OnExecute()
     {
 
-         LogCenter.Log("丢卡效果触发");
-         LogCenter.Log($"cardEffect.card.name = {cardEffect.card.name}");
-        BattleSystem.instance.DrawCard(cardEffect.card.player);
+        Debug.Log("丢卡效果触发");
+        Debug.Log($"cardEffect.card.name = {cardEffect.card.name}");
+        foreach (var card in targetCards)
+        {
+            BattleSystem.instance.DisCard(cardEffect.card.player,cardEffect.card);
+        }
+        
     }
 }

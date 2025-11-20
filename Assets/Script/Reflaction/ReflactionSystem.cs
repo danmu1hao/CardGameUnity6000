@@ -11,16 +11,16 @@ public static class ReflactionSystem
 
         if (type == null)
         {
-             LogCenter.LogError($"找不到类名：{className}");
+            Debug.LogError($"找不到类名：{className}");
             return null;
         }
 
         if (!typeof(T).IsAssignableFrom(type))
         {
-             LogCenter.LogError($"{className} 不是 {typeof(T).Name} 的子类");
+            Debug.LogError($"{className} 不是 {typeof(T).Name} 的子类");
             return null;
         }
-         LogCenter.Log("找到类"+className);
+        Debug.Log("找到类"+className);
         return Activator.CreateInstance(type) as T;
     }
 
@@ -32,7 +32,7 @@ public static class ReflactionSystem
 
         if (type == null)
         {
-             LogCenter.LogWarning($"找不到类型 {className}，尝试在所有程序集中搜索...");
+            Debug.LogWarning($"找不到类型 {className}，尝试在所有程序集中搜索...");
 
             // 遍历所有程序集查找
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
@@ -45,17 +45,17 @@ public static class ReflactionSystem
 
         if (type == null)
         {
-             LogCenter.LogError($"❌ 仍然找不到类名：{className}");
+            Debug.LogError($"❌ 仍然找不到类名：{className}");
             return null;
         }
 
         if (!typeof(T).IsAssignableFrom(type))
         {
-             LogCenter.LogError($"❌ {className} 不是 {typeof(T).Name} 的子类");
+            Debug.LogError($"❌ {className} 不是 {typeof(T).Name} 的子类");
             return null;
         }
 
-         LogCenter.Log($"✅ 成功找到类：{className}");
+        Debug.Log($"✅ 成功找到类：{className}");
         return Activator.CreateInstance(type) as T;
     }*/
 }

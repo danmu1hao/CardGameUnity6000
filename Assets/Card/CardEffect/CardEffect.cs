@@ -29,7 +29,7 @@ public class CardEffect
     /// 一个效果管多个原子效果
     /// </summary>
     public CardEffectConfig cardEffectConfig;
-    public readonly  AtomicEffect AtomicEffect;
+    public readonly  List<AtomicEffect> AtomicEffectList=new List<AtomicEffect>();
     public readonly  Timing timing;
     public readonly  Condition condition;
 
@@ -53,27 +53,30 @@ public class CardEffect
         
         foreach (var atomicEffectConfig in cardEffectConfig.atomicEffectConfigList)
         {
-            this.AtomicEffect = ReflactionSystem.FindClassByName<AtomicEffect>(atomicEffectConfig.effect);
-            if (AtomicEffect == null)
+            AtomicEffect atomicEffect= ReflactionSystem.FindClassByName<AtomicEffect>(atomicEffectConfig.effect);
+            if (atomicEffect == null)
             {
-                AtomicEffect = new NoneType();
-                 LogCenter.Log("nonetype");
+                atomicEffect = new NoneType();
+                Debug.Log("nonetype");
             }
-            this.AtomicEffect.cardEffect=this;
+            else
+            {
+                atomicEffect.AtomicEffectImportData(atomicEffectConfig,this);
+            }
+            this.AtomicEffectList.Add(atomicEffect);
         }
 
             
         //TODO
-        this.timing = new Timing();
+        this.timing = new Timing(this.cardEffectConfig.timing);
             
         this.condition = new Condition(SplitAndStr(cardEffectConfig.condition),this); 
 
 
 
         this.card = card;
-            
-        timing.LoadTiming(this.cardEffectConfig.timing);
-         LogCenter.Log(card.name+cardEffectConfig.timing);
+ 
+        Debug.Log(card.name+cardEffectConfig.timing);
     }
 
 
@@ -82,12 +85,17 @@ public class CardEffect
         return str.Split("&&");
     }
 
-
+    
+    public void ImportTriggerData(TriggerData triggerData)
+    {
+        this.triggerData = triggerData;
+    }
 
     #region EffectActive
 
     public async Task<bool> Start()
     {
+        Debug.Log("开始执行CardEffect"+AtomicEffectList.Count+"个原子效果");
         bool preSuccess = await CardEffectAcitvePre();
         if (!preSuccess) return false;
         return await ActiveCardEffect();
@@ -101,13 +109,17 @@ public class CardEffect
         // 记住 目前不确定如果pre需要连续选择好几次对象会咋样
         foreach (var atomicEffect in preEffectList)
         {
-            if (await atomicEffect.EffectExecute()==false) return false;
+            if (! await atomicEffect.EffectExecute()) return false;
         }
 
         return true;
     }
     async Task<bool> ActiveCardEffect()
     {
+        foreach (var atomicEffect in AtomicEffectList)
+        {
+            await atomicEffect.EffectExecute();
+        }
         return true;
     }
 

@@ -8,7 +8,7 @@ public abstract class AtomicEffect
 {
     #region  effectOrigin
     public AtomicEffectConfig AtomicEffectConfig;
-    public int AtomicEffect_ID => AtomicEffectConfig.effectID;
+    public long AtomicEffect_ID => AtomicEffectConfig.effectID;
     public string AtomicEffect_Name => AtomicEffectConfig.effectName;
     public string AtomicEffect_Text => AtomicEffectConfig.internalDesc;
     public string AtomicEffect_Detail => AtomicEffectConfig.effectDetail;
@@ -16,32 +16,36 @@ public abstract class AtomicEffect
     public string AtomicEffect_Duration => AtomicEffectConfig.effectDuration;
 
     #endregion
+    public Player player=>card.player;
+
     public Player targetPlayer => target.targetPlayer;
     public Card card => cardEffect.card;
-    
-    public List<ExtraInfoEnum> AtomicEffect_Extra_Info;
 
-    public Target target;
+
     public CardEffect cardEffect;
+    public Target target;
+    public List<ExtraInfoEnum> AtomicEffect_Extra_Info=new List<ExtraInfoEnum>();
     
     public List<Card> targetCards => target.targetCards;
 
-    
-    int effectNum;  
-    public List<Card> targetCardList=new List<Card>();
-    
+
     public TriggerData triggerData =>cardEffect.triggerData;
-    protected AtomicEffect()
+    public AtomicEffect()
     {
     }
 
 
-    public AtomicEffect(AtomicEffectConfig atomicEffectConfig, CardEffect cardEffect)
+    public void AtomicEffectImportData(AtomicEffectConfig atomicEffectConfig, CardEffect cardEffect)
     {
         this.cardEffect = cardEffect;
         this.AtomicEffectConfig = atomicEffectConfig;
-        string[] extraSplit =
-            atomicEffectConfig.extra.Split("&&");
+
+        string[] targetStr = splitStr(atomicEffectConfig.target);
+        Debug.Log("targetTest"+atomicEffectConfig.effectName+atomicEffectConfig.target);
+        target = new Target(this, targetStr.ToList());        
+
+        Debug.Log("测试对象是否正确"+atomicEffectConfig.target);
+        string[] extraSplit = splitStr(atomicEffectConfig.extra);
         foreach (var extraStr in extraSplit)
         {
             this.AtomicEffect_Extra_Info.Add(CardEnums.TryGetEnum<ExtraInfoEnum>(extraStr));
@@ -49,6 +53,11 @@ public abstract class AtomicEffect
         
     }
 
+    string[] splitStr(string str)
+    {
+        return str.Split("&&");
+    }
+    
 
     async Task<bool> FindTarget()
     {
@@ -61,30 +70,35 @@ public abstract class AtomicEffect
     /// <returns></returns>
     public async Task<bool> EffectExecute()
     {
+        if (target == null)
+        {
+            Debug.LogWarning("对象为空");
+        }
+        Debug.Log("找寻对象");
         bool targetSuccess=
         await FindTarget();
         if(!targetSuccess)return false;
         
         if (cardEffect == null)
         {
-             LogCenter.LogError($"{GetType().Name}: cardEffect 为空");
+            Debug.LogError($"{GetType().Name}: cardEffect 为空");
             return false;
         }
 
         if (cardEffect.card == null)
         {
-             LogCenter.LogError($"{GetType().Name}: cardEffect.card 为空");
+            Debug.LogError($"{GetType().Name}: cardEffect.card 为空");
             return false;
         }
 
         if (cardEffect.card.name == null)
         {
-             LogCenter.LogError($"{GetType().Name}: cardEffect.card.name 为空");
+            Debug.LogError($"{GetType().Name}: cardEffect.card.name 为空");
             return false;
         }
 
         
-         LogCenter.Log($"执行效果 {GetType().Name}");
+        Debug.Log($"执行效果 {GetType().Name}");
         await OnExecute();
 
         return true;

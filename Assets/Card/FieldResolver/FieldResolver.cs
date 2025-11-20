@@ -14,7 +14,7 @@ public static class FieldResolver
         var match = System.Text.RegularExpressions.Regex.Match(expression, @"(.+?)\s*(==|=|!=|>|<)\s*(.+)");
         if (!match.Success)
         {
-            LogCenter.LogWarning($"无法解析表达式：{expression}");
+           Debug.LogWarning($"无法解析表达式：{expression}");
             return false;
         }
 
@@ -26,13 +26,13 @@ public static class FieldResolver
         // 使用你已有的方法提取左边变量的值
         string leftValue = GetVaribleData(leftRaw, card, triggerData);
         string rightValue = GetVaribleData(rightRaw, card, triggerData);
-        if(leftValue=="null"||rightValue=="null"){ LogCenter.LogError("resolve fail");return false;}
+        if(leftValue=="null"||rightValue=="null"){Debug.LogError("resolve fail");return false;}
         // ( leftValue op rightValue)
         // 重组为简单表达式字符串，如 "5 > 3"
         string evalExpression = $"{leftValue} {op} {rightValue}";
 
         // 调用你已有的表达式评估器
-         LogCenter.Log(leftValue+" "+rightValue+" "+evalExpression+" "+SimpleParser.Evaluate(evalExpression));
+        Debug.Log(evalExpression+" "+SimpleParser.Evaluate(evalExpression));
         return SimpleParser.Evaluate(evalExpression);
     }
     
@@ -40,13 +40,13 @@ public static class FieldResolver
     public static string GetVaribleData(string keyword, Card card, TriggerData triggerData)
     {
         if (string.IsNullOrEmpty(keyword)) return "";
-        /* LogCenter.Log(keyword);*/
+        /*Debug.Log(keyword);*/
         // 判断是否带有属性访问符（.）
         // 只有1个的情况
         var parts = keyword.Split('.');
         if (parts.Length == 1)
         {
-             LogCenter.Log("这个不需要解析"+keyword);
+            Debug.Log("这个不需要解析"+keyword);
             return keyword;
         }
         // 两个 class.varible
@@ -73,16 +73,8 @@ public static class FieldResolver
     private static IClassResolver ResolveClass(string classType, Card card, TriggerData triggerData)
     {
         IClassResolver result = null;
-        
-        if (Enum.TryParse("attack", ignoreCase: true, out CardEnums.ObjectEnum type))
-        {
-             LogCenter.Log($"转换成功: {type}");
-        }
-        else
-        {
-             LogCenter.LogWarning("转换失败");
-            return null;
-        }
+
+        CardEnums.ObjectEnum type = CardEnums.TryGetEnum<CardEnums.ObjectEnum>(classType);
         
         switch (type)
         {
@@ -117,13 +109,13 @@ public static class FieldResolver
 
 
             default:
-                 LogCenter.LogWarning($"未处理的 ClassEnum: {classType}");
+                Debug.LogWarning($"未处理的 ClassEnum: {classType}");
                 break;
         }
 
 
 
-        return null;
+        return result;
     }
     //获取对象属性，比如，将self.atk识别为自身卡牌的攻击力
     private static string GetCardFieldValue(IClassResolver classResolver, string field)
@@ -147,7 +139,7 @@ public static class FieldResolver
             return value?.ToString() ?? "";
         }
 
-         LogCenter.LogWarning($"字段 '{field}' 不存在于卡牌对象中");
+        Debug.LogWarning($"字段 '{field}' 不存在于卡牌对象中");
         return "";
     }
 

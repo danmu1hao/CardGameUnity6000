@@ -7,14 +7,19 @@ public class Timing
 
     public CardEnums.TimingEnum timingEnum;
 
-    public bool LoadTiming(string timingText)
+    public Timing(string timingText)
+    {
+        LoadTiming(timingText);
+    }
+
+    void LoadTiming(string timingText)
     {
         bool success = Enum.TryParse(timingText, out timingEnum);
         if (success)
         {
-             LogCenter.Log($"✅ 成功将 '{timingText}' 解析为 TimingList.{timingEnum}");
+            Debug.Log($"✅ 成功将 '{timingText}' 解析为 TimingList.{timingEnum}");
         }
-        return success;
+
     }
 
 

@@ -9,8 +9,10 @@ using UnityEngine.Splines;
 /// 使用方式：StartCoroutine(handView.AddCard(cardView));
 /// cardView 必须是 Canvas 下的 UI（RectTransform）
 /// </summary>
-public class DrawCardUI : MonoBehaviour
+public class HandCardLayoutUI : MonoBehaviour
 {
+    
+    //TODO UI没有重排啊
     // [SerializeField] private SplineContainer splineContainer; 暂时放弃曲线
     private readonly List<RectTransform> cards = new();
 
@@ -25,7 +27,29 @@ public class DrawCardUI : MonoBehaviour
         cards.Remove(cardView);
         yield return UpdateCardPositions(0.15f);
     }
-    // 我们暂时放弃曲线的思路
+
+    [SerializeField] private float cardSpacing; 
+    private IEnumerator UpdateCardPositions(float duration)
+    {
+        if (cards.Count == 0) yield break;
+        float firstCardPosition= - cardSpacing*((cards.Count-1f)/2f);
+        for (int i = 0; i < cards.Count; i++)
+        {
+            float p = firstCardPosition + i * cardSpacing;
+
+            // UI 卡牌位置：取 x,y，作为 anchoredPosition
+            Vector2 targetPos = new Vector2(p,0);
+            
+            cards[i].DOAnchorPos(targetPos, duration);
+
+        }
+
+        yield return new WaitForSeconds(duration);
+    }
+
+    #region OldDesign
+
+        // 我们暂时放弃曲线的思路
     // private IEnumerator UpdateCardPositions(float duration)
     // {
     //     if (cards.Count == 0) yield break;
@@ -52,22 +76,6 @@ public class DrawCardUI : MonoBehaviour
     //
     //     yield return new WaitForSeconds(duration);
     // }
-    [SerializeField] private float cardSpacing; 
-    private IEnumerator UpdateCardPositions(float duration)
-    {
-        if (cards.Count == 0) yield break;
-        float firstCardPosition= - cardSpacing*((cards.Count-1f)/2f);
-        for (int i = 0; i < cards.Count; i++)
-        {
-            float p = firstCardPosition + i * cardSpacing;
 
-            // UI 卡牌位置：取 x,y，作为 anchoredPosition
-            Vector2 targetPos = new Vector2(p,0);
-            
-            cards[i].DOAnchorPos(targetPos, duration);
-
-        }
-
-        yield return new WaitForSeconds(duration);
-    }
+    #endregion
 }

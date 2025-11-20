@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class Condition
 {
@@ -12,6 +13,7 @@ public class Condition
 
     public bool CheckConditionAndTarget()
     {
+        Debug.Log("检测条件");
         if (!CheckCondition()) return false;
         if (!CheckTargetExist()) return false;
         return true;
@@ -20,15 +22,13 @@ public class Condition
     // TODO 条件确认 对象存在确认
     bool CheckCondition()
     {
-        
         // 检查条件是否满足
         foreach (var conditionStr in conditionList)
         {
-            LogCenter.Log(conditionStr);
+           Debug.Log(conditionStr);
             //所有条件必须全部满足
             if (!FieldResolver.Resolver(conditionStr,cardEffect.card,cardEffect.triggerData))
             {
-                
                 return false;
             }
         }

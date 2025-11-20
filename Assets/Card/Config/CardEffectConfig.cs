@@ -6,7 +6,8 @@ public struct CardEffectConfig
 {
     // 由父效果管理的原子效果列表
     public List<AtomicEffectConfig> atomicEffectConfigList;
-
+    // public List<int> atomicEffectIDList=>atomicEffectConfigList.ConvertAll(item=>item.effectID);
+    //
     // 父效果本身只保留你列出的这些字段
     public int    effectID;      // 效果ID (cardID + n + 0)
     public string effectName;    // 效果名

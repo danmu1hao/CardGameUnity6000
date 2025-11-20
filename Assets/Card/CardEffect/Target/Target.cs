@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
-using Target = CardEnums.ObjectEnum;
+using TargetEnum = CardEnums.ObjectEnum;
 
 public class Target
 {
@@ -11,6 +11,8 @@ public class Target
     
     //目前构想 select_count or self,player...
     public  List<Card> targetCards = new List<Card>();
+    
+
     public Player targetPlayer = null;
     
     public Target(AtomicEffect atomicEffect,List<string> targetStringList)
@@ -26,7 +28,7 @@ public class Target
     public async Task<bool> GetValidTargets()
     {
         List<Card> targets = new List<Card>();
-         LogCenter.Log($"开始查找效果目标");
+        Debug.Log($"开始查找效果目标");
 
         // 情况1 选对象 通过额外信息的select_count=1判断
         foreach (var infoEnum in atomicEffect.AtomicEffect_Extra_Info)
@@ -43,13 +45,13 @@ public class Target
         
         foreach (var targetCondition in targetStringList)
         {
-            ResolveTargetList(targetCondition, atomicEffect.card, atomicEffect.triggerData);
+            ResolveTargetList(targetCondition, atomicEffect.triggerData);
         }
 
         if (targetCards.Count == 0 && targetPlayer == null)
         {
             return false;
-            LogCenter.LogWarning("找对象失败？");
+           Debug.LogWarning("找对象失败？");
         }
 
         return true;
@@ -79,13 +81,15 @@ public class Target
         
         foreach (var targetCondition in targetStringList)
         {
-            ResolveTargetList(targetCondition, atomicEffect.card, atomicEffect.triggerData);
+
+            
+            ResolveTargetList(targetCondition,  atomicEffect.triggerData);
         }
 
         if (targetCards.Count == 0 && targetPlayer == null)
         {
             return false;
-            LogCenter.LogWarning("找对象失败？");
+           Debug.LogWarning("找对象失败？");
         }
 
         return true;
@@ -98,41 +102,47 @@ public class Target
     }
     
     // csharp
-    private void ResolveTargetList(string keyword, Card card, TriggerData triggerData)
+    private void ResolveTargetList(string keyword,  TriggerData triggerData)
     {
+        Debug.Log("判断对象内容为"+keyword);
+        string[] targetSplit = keyword.Split('=');
         // 每次解析前清空上次结果
         targetCards = new List<Card>();
         targetPlayer = null;
+        Debug.Log("Target is "+targetSplit[1]);
 
-        switch (keyword)
+        TargetEnum targetEnum = CardEnums.TryGetEnum<TargetEnum>(targetSplit[1]);
+        
+        switch (targetEnum)
         {
-            case "self":
-                targetCards = new List<Card> { card };
+            case TargetEnum.Self:
+                targetCards = new List<Card> { this.atomicEffect.card };
                 break;
 
-            case "attacker":
+            case TargetEnum.Attacker:
                 if (triggerData?.Source != null)
                     targetCards = new List<Card> { triggerData.Source };
                 else
                     targetCards = new List<Card>();
                 break;
 
-            case "defender":
+            case TargetEnum.Defender:
                 if (triggerData?.MutiTarget != null && triggerData.MutiTarget.Count > 0 && triggerData.MutiTarget[0] != null)
                     targetCards = new List<Card> { triggerData.MutiTarget[0] };
                 else
                     targetCards = new List<Card>();
                 break;
 
-            case "player":
-                targetPlayer = card?.player;
+            case TargetEnum.Me:
+                targetPlayer = this.atomicEffect.player;
                 break;
 
             default:
                 targetCards = new List<Card>();
                 break;
         }
-        LogCenter.Log("解析目标完成");
+        
+       Debug.Log("解析目标完成"+targetCards.Count+"targetCarsNum----Player"+targetPlayer?.playerId);
     }
 
 

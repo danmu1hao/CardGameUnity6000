@@ -26,7 +26,7 @@ public class Arrow: MonoBehaviour
         startPoint = targetRect.position;
 
         /*
-         LogCenter.Log(screenPos);*/
+        Debug.Log(screenPos);*/
     }
 
 

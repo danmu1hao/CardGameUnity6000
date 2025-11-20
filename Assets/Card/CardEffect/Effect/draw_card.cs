@@ -5,10 +5,8 @@ public class draw_card : AtomicEffect
 {
     protected override async Task OnExecute()
     {
-
-
-         LogCenter.Log("抽卡效果触发");
-         LogCenter.Log($"cardEffect.card.name = {cardEffect.card.name}");
+        Debug.Log("抽卡效果触发");
+        Debug.Log($"cardEffect.card.name = {cardEffect.card.name}");
         BattleSystem.instance.DrawCard(cardEffect.card.player);
     }
 }

@@ -389,7 +389,7 @@ namespace FlyRabbit.EventCenter
         {
             throw new EventCenterException(message);
             //如果你认为不该直接抛出异常，可改为打印日志等其他报错方式
-            // LogCenter.LogError(message);
+            //Debug.LogError(message);
         }
         #endregion
     }

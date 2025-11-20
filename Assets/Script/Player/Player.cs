@@ -55,7 +55,7 @@ public class Player:IClassResolver
 
     public string TryResolveCard(string resolveContent)
     {
-         LogCenter.Log(resolveContent);
+        Debug.Log(resolveContent);
         return null;
     }
 }

@@ -139,7 +139,7 @@ public class SelectPanelManager : MonoBehaviour
         // 打印当前选择
         foreach (var s in _currentSelected)
         {
-             LogCenter.Log($"当前已选: {s.gameObject.name}");
+            Debug.Log($"当前已选: {s.gameObject.name}");
         }
     }
 
