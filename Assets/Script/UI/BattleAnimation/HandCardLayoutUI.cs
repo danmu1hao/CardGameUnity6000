@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.Splines;
 
 /// <summary>
@@ -14,33 +15,35 @@ public class HandCardLayoutUI : MonoBehaviour
     
     //TODO UI没有重排啊
     // [SerializeField] private SplineContainer splineContainer; 暂时放弃曲线
-    private readonly List<RectTransform> cards = new();
+    [FormerlySerializedAs("cards")] [SerializeField]private List<HandCardDisplay> handCarss = new();
 
-    public IEnumerator AddCard(RectTransform cardView)
+    public IEnumerator AddCard(HandCardDisplay cardView)
     {
-        cards.Add(cardView);
+        handCarss.Add(cardView);
+        Debug.Log(handCarss.Count);
         yield return UpdateCardPositions(0.15f);
     }
 
-    public IEnumerator DeleteCard(RectTransform cardView)
+    public IEnumerator DeleteCard(HandCardDisplay cardView)
     {
-        cards.Remove(cardView);
+        handCarss.Remove(cardView);
+        Debug.Log(handCarss.Count);
         yield return UpdateCardPositions(0.15f);
     }
 
     [SerializeField] private float cardSpacing; 
     private IEnumerator UpdateCardPositions(float duration)
     {
-        if (cards.Count == 0) yield break;
-        float firstCardPosition= - cardSpacing*((cards.Count-1f)/2f);
-        for (int i = 0; i < cards.Count; i++)
+        if (handCarss.Count == 0) yield break;
+        float firstCardPosition= - cardSpacing*((handCarss.Count-1f)/2f);
+        for (int i = 0; i < handCarss.Count; i++)
         {
             float p = firstCardPosition + i * cardSpacing;
 
             // UI 卡牌位置：取 x,y，作为 anchoredPosition
             Vector2 targetPos = new Vector2(p,0);
             
-            cards[i].DOAnchorPos(targetPos, duration);
+            handCarss[i].gameObject.GetComponent<RectTransform>().DOAnchorPos(targetPos, duration);
 
         }
 

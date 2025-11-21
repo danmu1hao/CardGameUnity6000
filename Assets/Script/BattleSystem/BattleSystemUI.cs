@@ -48,6 +48,7 @@ public class BattleSystemUI : QuickInstance<BattleSystemUI>
 
     public void UseCard(Card card,GameObject selectSlot=null)
     {
+        
         // 会不会有法术卡？
         DeleteCard(card);
         if (selectSlot!=null)
@@ -75,12 +76,12 @@ public class BattleSystemUI : QuickInstance<BattleSystemUI>
         if (isPlayer)
         {
             cardModel.transform.SetParent(playerHandCardField.transform);
-            StartCoroutine(playerHandCardField.GetComponent<HandCardLayoutUI>().AddCard(cardModel.gameObject.GetComponent<RectTransform>()));
+            StartCoroutine(playerHandCardField.GetComponent<HandCardLayoutUI>().AddCard(cardModel.gameObject.GetComponent<HandCardDisplay>()));
         }
         else
         {
             cardModel.transform.SetParent(enemyHandCardField.transform);
-            StartCoroutine(enemyHandCardField.GetComponent<HandCardLayoutUI>().AddCard(cardModel.gameObject.GetComponent<RectTransform>()));
+            StartCoroutine(enemyHandCardField.GetComponent<HandCardLayoutUI>().AddCard(cardModel.gameObject.GetComponent<HandCardDisplay>()));
         }
         
         card.cardModel = cardModel;
@@ -92,13 +93,14 @@ public class BattleSystemUI : QuickInstance<BattleSystemUI>
         GameObject cardModel = card.cardModel;
         if (card.player==BattleSystem.instance.Player1)
         {
-            playerHandCardField.GetComponent<HandCardLayoutUI>().DeleteCard(cardModel.gameObject.GetComponent<RectTransform>());
+            StartCoroutine(playerHandCardField.GetComponent<HandCardLayoutUI>()
+                .DeleteCard(cardModel.gameObject.GetComponent<HandCardDisplay>()));
         }
         else
         {
-            enemyHandCardField.GetComponent<HandCardLayoutUI>().DeleteCard(cardModel.gameObject.GetComponent<RectTransform>());
+            StartCoroutine(enemyHandCardField.GetComponent<HandCardLayoutUI>().DeleteCard(cardModel.gameObject.GetComponent<HandCardDisplay>())) ;
         }
-        GameObject.Destroy(cardModel);  
+        DestoryModel(cardModel);
     }
 
     #endregion

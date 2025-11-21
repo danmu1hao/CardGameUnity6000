@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 public class HandCardDisplay : MonoBehaviour
 {
+    private int handIndexUI;
     // Start is called before the first frame update
     void Start()
     {

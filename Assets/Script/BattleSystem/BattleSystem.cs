@@ -402,6 +402,8 @@ public class BattleSystem : QuickInstance<BattleSystem>
 
     public void StartTurn()
     {
+        TriggerData triggerData = new TriggerData(currentPlayer);
+        EffectSystem.instance.TimingTrigger(CardEnums.TimingEnum.when_turn_start,triggerData);
         DrawCard(currentPlayer);
         // 重置攻击
         foreach (var card in currentPlayer.inFieldCards)
@@ -409,8 +411,7 @@ public class BattleSystem : QuickInstance<BattleSystem>
             card.hasAttacked=false;
         }
 
-        TriggerData triggerData = new TriggerData(currentPlayer);
-        EffectSystem.instance.TimingTrigger(CardEnums.TimingEnum.when_turn_start,triggerData);
+
     }
     public void EndTurn()
     {
